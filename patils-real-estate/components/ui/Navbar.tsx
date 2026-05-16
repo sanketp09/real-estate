@@ -37,8 +37,8 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex flex-col leading-none">
-            <span className="font-cormorant text-[var(--navy)] text-2xl tracking-widest font-semibold">SHRAV</span>
-            <span className="font-dm text-[var(--teal)] text-[10px] tracking-[0.25em] uppercase">Real Estate</span>
+            <span className={`font-cormorant text-2xl tracking-widest font-semibold transition-colors duration-500 ${scrolled ? 'text-[var(--navy)]' : 'text-[var(--white)]'}`}>SHRAV</span>
+            <span className={`font-dm text-[10px] tracking-[0.25em] uppercase transition-colors duration-500 ${scrolled ? 'text-[var(--teal)]' : 'text-[var(--white)]/80'}`}>Real Estate</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -46,29 +46,32 @@ export default function Navbar() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="relative font-dm text-sm tracking-widest uppercase group"
-                style={{ color: pathname === l.href ? 'var(--teal)' : 'var(--navy)' }}
+                className="relative font-dm text-sm tracking-widest uppercase group transition-colors duration-500"
+                style={{ color: pathname === l.href ? 'var(--teal)' : (scrolled ? 'var(--navy)' : 'var(--white)') }}
               >
                 {l.label}
                 <span
-                  className="absolute -bottom-1 left-0 h-px bg-[var(--teal)] transition-all duration-300"
-                  style={{ width: pathname === l.href ? '100%' : '0%' }}
+                  className="absolute -bottom-1 left-0 h-px transition-all duration-300"
+                  style={{ width: pathname === l.href ? '100%' : '0%', backgroundColor: scrolled ? 'var(--teal)' : 'var(--white)' }}
                 />
-                <span className="absolute -bottom-1 left-0 h-px bg-[var(--teal)] w-0 group-hover:w-full transition-all duration-300" />
+                <span 
+                  className="absolute -bottom-1 left-0 h-px w-0 group-hover:w-full transition-all duration-300" 
+                  style={{ backgroundColor: scrolled ? 'var(--teal)' : 'var(--white)' }}
+                />
               </Link>
             ))}
           </nav>
 
           <Link
             href="/contact"
-            className="hidden md:inline-flex items-center bg-[var(--teal)] text-[var(--white)] px-5 py-2 font-dm text-xs tracking-widest uppercase hover:bg-[var(--sky-blue)] hover:text-[var(--navy)] transition-all"
+            className={`hidden md:inline-flex items-center px-5 py-2 font-dm text-xs tracking-widest uppercase transition-all duration-500 ${scrolled ? 'bg-[var(--teal)] text-[var(--white)] hover:bg-[var(--navy)]' : 'bg-[var(--white)] text-[var(--navy)] hover:bg-[var(--teal)] hover:text-[var(--white)]'}`}
           >
             Schedule Visit
           </Link>
 
           <button
             onClick={() => setOpen(true)}
-            className="md:hidden text-[var(--navy)] p-1"
+            className={`md:hidden p-1 transition-colors duration-500 ${scrolled ? 'text-[var(--navy)]' : 'text-[var(--white)]'}`}
           >
             <Menu className="w-6 h-6" />
           </button>
