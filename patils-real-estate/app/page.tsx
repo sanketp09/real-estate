@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Star, ChevronDown } from 'lucide-react'
 import MagneticButton from '@/components/shared/MagneticButton'
+import { createPortal } from 'react-dom'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -17,8 +18,26 @@ function ScrollSequence() {
   const framesRef = useRef<HTMLImageElement[]>([])
   const [loading, setLoading] = useState(true)
   const [progress, setProgress] = useState(0)
-  const [showText, setShowText] = useState(false)
+  const [showStartText, setShowStartText] = useState(true)
+  const [showEndText, setShowEndText] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const currentFrameRef = useRef(0)
+
+  useEffect(() => {
+    setMounted(true)
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+  }, [])
+
+  useEffect(() => {
+    if (loading) {
+      document.body.style.overflow = 'hidden'
+      window.scrollTo(0, 0)
+    } else {
+      document.body.style.overflow = ''
+    }
+  }, [loading])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -34,8 +53,10 @@ function ScrollSequence() {
     window.addEventListener('resize', resize)
 
     const totalFrames = 471
-    const frames: HTMLImageElement[] = []
-    let loaded = 0
+    const frames: HTMLImageElement[] = new Array(totalFrames)
+    framesRef.current = frames
+    
+    const BATCH_SIZE = totalFrames // Wait for ALL frames as requested by user
 
     const drawFrame = (index: number) => {
       const img = framesRef.current[index]
@@ -49,24 +70,34 @@ function ScrollSequence() {
       ctx.drawImage(img, x, y, img.naturalWidth * scale, img.naturalHeight * scale)
     }
 
-    for (let i = 1; i <= totalFrames; i++) {
+    const loadSequential = (startIndex: number, onComplete?: () => void) => {
+      if (startIndex > totalFrames) {
+        if (onComplete) onComplete()
+        return
+      }
       const img = new window.Image()
-      img.src = `/frames/frame_${String(i).padStart(3, '0')}.jpg`
+      img.src = `/frames/frame_${String(startIndex).padStart(3, '0')}.jpg`
       img.onload = () => {
-        loaded++
-        setProgress(Math.round((loaded / totalFrames) * 100))
-        // Dismiss loader early so the site appears instantly, 
-        // the rest of the 400+ frames will lazily load in background.
-        if (loaded === 2) setLoading(false)
+        frames[startIndex - 1] = img
+        setProgress(Math.round((startIndex / totalFrames) * 100))
+        if (startIndex === 1) drawFrame(0) // Draw first frame immediately
+        
+        if (startIndex === BATCH_SIZE) {
+          setLoading(false)
+          // Continue loading the rest silently in background
+          loadSequential(startIndex + 1)
+        } else if (startIndex < BATCH_SIZE || startIndex > BATCH_SIZE) {
+          loadSequential(startIndex + 1, onComplete)
+        }
       }
       img.onerror = () => {
-        loaded++
-        setProgress(Math.round((loaded / totalFrames) * 100))
-        if (loaded === 2) setLoading(false)
+        if (startIndex === BATCH_SIZE) setLoading(false)
+        loadSequential(startIndex + 1, onComplete)
       }
-      frames.push(img)
     }
-    framesRef.current = frames
+
+    // Start loading sequentially
+    loadSequential(1)
 
     const ctx2 = gsap.context(() => {
       ScrollTrigger.create({
@@ -80,53 +111,49 @@ function ScrollSequence() {
             currentFrameRef.current = frameIndex
             drawFrame(frameIndex)
           }
-          setShowText(self.progress > 0.83)
+          setShowStartText(self.progress < 0.1)
+          setShowEndText(self.progress > 0.83)
         }
       })
     })
 
-    const checkFirstFrame = setInterval(() => {
-      if (framesRef.current[0] && framesRef.current[0].complete) {
-        drawFrame(0)
-        clearInterval(checkFirstFrame)
-      }
-    }, 100)
-
     return () => {
       window.removeEventListener('resize', resize)
       ctx2.revert()
-      clearInterval(checkFirstFrame)
     }
   }, [])
 
   return (
     <>
-      <AnimatePresence>
-        {loading && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="fixed inset-0 z-[100] bg-[var(--beige)] flex flex-col items-center justify-center"
-          >
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="font-cormorant text-[var(--navy)] text-2xl tracking-[0.4em] uppercase mb-12"
+      {mounted && typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="fixed inset-0 z-[99999] bg-[var(--beige)] flex flex-col items-center justify-center"
             >
-              Shrav Estate
-            </motion.p>
-            <div className="w-64 h-px bg-[var(--rule-heavy)] relative overflow-hidden">
-              <motion.div
-                className="absolute inset-y-0 left-0 bg-[var(--teal)]"
-                style={{ width: `${progress}%` }}
-                transition={{ duration: 0.1 }}
-              />
-            </div>
-            <p className="font-dm text-[var(--navy)]/70 text-sm mt-4">{progress}%</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-dm text-[var(--navy)] text-3xl md:text-5xl font-black tracking-[0.3em] uppercase mb-12"
+              >
+                LOADING
+              </motion.p>
+              <div className="w-64 h-2 bg-[var(--rule-heavy)] relative overflow-hidden rounded-full">
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-[var(--teal)] rounded-full"
+                  style={{ width: `${progress}%` }}
+                  transition={{ duration: 0.1 }}
+                />
+              </div>
+              <p className="font-dm text-[var(--navy)]/70 text-sm mt-6 font-bold tracking-widest">{progress}%</p>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <div ref={wrapperRef} style={{ height: '600vh' }} className="relative">
         <div className="sticky top-0 h-screen w-full overflow-hidden bg-[var(--white)]">
@@ -135,11 +162,53 @@ function ScrollSequence() {
           {/* Shadow overlay to hide any remaining watermark at the bottom edge */}
           <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
 
+          {/* Initial Frame Text */}
           <AnimatePresence>
-            {showText && (
+            {showStartText && (
+              <motion.div
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 flex flex-col justify-center px-8 md:px-24 pointer-events-none"
+                style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }}
+              >
+                <motion.p
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="font-dm text-[var(--beige)] text-sm tracking-[0.3em] uppercase mb-6 font-semibold"
+                >
+                  Welcome To Shrav Estate
+                </motion.p>
+                <div className="overflow-hidden mb-6">
+                  <motion.h1
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    transition={{ delay: 0.25, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-cormorant text-[var(--white)] font-bold uppercase text-[10vw] md:text-7xl lg:text-8xl tracking-wider leading-[1.05] max-w-4xl"
+                  >
+                    CRAFTED<br />FOR ELEVATED<br />LIVING
+                  </motion.h1>
+                </div>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="font-dm text-[var(--white)]/90 font-medium uppercase tracking-widest text-sm md:text-base mb-12 max-w-xl leading-relaxed"
+                >
+                  Mumbai&apos;s Most Trusted Luxury Properties
+                </motion.p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* End Frame Text */}
+          <AnimatePresence>
+            {showEndText && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="absolute inset-0 flex flex-col items-center justify-center"
                 style={{ background: 'radial-gradient(circle, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 40%, transparent 80%)' }}
               >
