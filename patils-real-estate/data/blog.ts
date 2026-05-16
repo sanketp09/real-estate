@@ -1,0 +1,8 @@
+export const blogPosts = [
+  { id: "1", title: "The Future of Luxury Real Estate in Mumbai", category: "Market Insights", date: "Oct 12, 2024", readTime: "5 min read", excerpt: "An in-depth look at how luxury living is evolving in South Mumbai and BKC.", image: "https://picsum.photos/seed/b1/800/600" },
+  { id: "2", title: "Top 5 Emerging Neighborhoods in Pune", category: "Location Guide", date: "Sep 28, 2024", readTime: "4 min read", excerpt: "Discover the areas in Pune that offer the best ROI for real estate investors.", image: "https://picsum.photos/seed/b2/800/600" },
+  { id: "3", title: "Understanding RERA Guidelines 2024", category: "Legal", date: "Sep 15, 2024", readTime: "6 min read", excerpt: "What home buyers need to know about the latest RERA updates.", image: "https://picsum.photos/seed/b3/800/600" },
+  { id: "4", title: "Smart Home Features that Add Value", category: "Architecture", date: "Aug 30, 2024", readTime: "3 min read", excerpt: "How integrating smart technology can increase your property's resale value.", image: "https://picsum.photos/seed/b4/800/600" },
+  { id: "5", title: "Why Nashik is the Next Big Real Estate Hub", category: "Investment", date: "Aug 12, 2024", readTime: "5 min read", excerpt: "Analyzing the infrastructural growth making Nashik an investor favorite.", image: "https://picsum.photos/seed/b5/800/600" },
+  { id: "6", title: "Interior Design Trends for 2025", category: "Lifestyle", date: "Jul 25, 2024", readTime: "4 min read", excerpt: "Get a sneak peek into the materials and colors that will dominate next year.", image: "https://picsum.photos/seed/b6/800/600" },
+]

@@ -1,0 +1,2025 @@
+cat > /home/claude/patils-real-estate/components/ui/Navbar.tsx << 'EOF'
+'use client'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X, Menu } from 'lucide-react'
+
+const links = [
+  { href: '/properties', label: 'Properties' },
+  { href: '/about', label: 'About' },
+  { href: '/blog', label: 'Journal' },
+  { href: '/calculator', label: 'Calculator' },
+  { href: '/contact', label: 'Contact' },
+]
+
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+  const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+  const isHome = pathname === '/'
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', fn, { passive: true })
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
+
+  const navBg = isHome
+    ? scrolled
+      ? 'bg-[var(--white)]/95 backdrop-blur-md border-b border-[var(--rule)]'
+      : 'bg-transparent'
+    : 'bg-[var(--white)]/95 backdrop-blur-md border-b border-[var(--rule)]'
+
+  const textColor = isHome && !scrolled ? 'text-[var(--white)]' : 'text-[var(--ink)]'
+  const logoColor = isHome && !scrolled ? 'text-[var(--terra-lt)]' : 'text-[var(--terra)]'
+  const subColor  = isHome && !scrolled ? 'text-[var(--cream)] opacity-70' : 'text-[var(--dust)]'
+
+  return (
+    <>
+      <header className={`fixed top-0 inset-x-0 z-[900] transition-all duration-500 ${navBg}`}>
+        <div className="max-w-[1440px] mx-auto px-8 md:px-12 flex items-center justify-between h-[72px]">
+
+          {/* Logo */}
+          <Link href="/" className="flex flex-col leading-none gap-0.5">
+            <span className={`font-display text-xl tracking-[0.18em] font-medium ${logoColor} transition-colors duration-500`}>
+              PATIL&apos;S
+            </span>
+            <span className={`text-[9px] tracking-[0.45em] uppercase font-light ${subColor} transition-colors duration-500`}>
+              Real Estate
+            </span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-9">
+            {links.map(({ href, label }) => {
+              const active = pathname === href
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`relative text-[11px] tracking-[0.22em] uppercase font-medium transition-colors duration-300 group ${
+                    active ? 'text-[var(--terra)]' : `${textColor} opacity-80 hover:opacity-100 hover:text-[var(--terra)]`
+                  }`}
+                >
+                  {label}
+                  <span className={`absolute -bottom-0.5 left-0 h-px bg-[var(--terra)] transition-all duration-300 ${active ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* CTA */}
+          <div className="hidden md:flex items-center gap-5">
+            <Link
+              href="/contact"
+              className="text-[11px] tracking-[0.22em] uppercase font-medium bg-[var(--terra)] text-[var(--white)] px-6 py-2.5 hover:bg-[var(--terra-dk)] transition-colors duration-300"
+            >
+              Schedule Visit
+            </Link>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            aria-label="Open menu"
+            onClick={() => setOpen(true)}
+            className={`md:hidden p-2 ${textColor}`}
+          >
+            <Menu size={22} strokeWidth={1.5} />
+          </button>
+        </div>
+      </header>
+
+      {/* Full-screen mobile menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[950] bg-[var(--linen)] flex flex-col"
+          >
+            <div className="flex items-center justify-between px-8 h-[72px] border-b border-[var(--rule)]">
+              <span className="font-display text-xl tracking-[0.18em] text-[var(--terra)]">PATIL&apos;S</span>
+              <button onClick={() => setOpen(false)} className="text-[var(--ink)] p-2">
+                <X size={22} strokeWidth={1.5} />
+              </button>
+            </div>
+            <nav className="flex flex-col items-start px-10 pt-16 gap-8">
+              {links.map(({ href, label }, i) => (
+                <motion.div
+                  key={href}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    className="font-display text-4xl font-normal text-[var(--ink)] hover:text-[var(--terra)] transition-colors"
+                  >
+                    {label}
+                  </Link>
+                </motion.div>
+              ))}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                className="mt-6"
+              >
+                <Link
+                  href="/contact"
+                  onClick={() => setOpen(false)}
+                  className="inline-block bg-[var(--terra)] text-white text-[11px] tracking-[0.25em] uppercase px-10 py-3.5"
+                >
+                  Schedule Visit
+                </Link>
+              </motion.div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
+EOF
+echo "navbar done"
+
+
+cat > /home/claude/patils-real-estate/components/ui/Footer.tsx << 'EOF'
+'use client'
+import Link from 'next/link'
+import { Instagram, Linkedin, Youtube, MapPin, Phone, Mail } from 'lucide-react'
+
+export default function Footer() {
+  return (
+    <footer className="bg-[var(--panel)] diag-tex relative overflow-hidden">
+      <div className="max-w-[1440px] mx-auto px-8 md:px-12 pt-20 pb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
+
+          {/* Brand */}
+          <div className="col-span-2 md:col-span-1">
+            <p className="font-display text-2xl tracking-[0.18em] text-[var(--terra-lt)] mb-1">PATIL&apos;S</p>
+            <p className="text-[9px] tracking-[0.4em] text-[var(--sand)] uppercase mb-5">Real Estate</p>
+            <p className="text-sm text-[var(--dust)] leading-relaxed max-w-[200px]">
+              Building trust since 2009. One family at a time across Mumbai, Pune & Nashik.
+            </p>
+            <div className="flex gap-3 mt-6">
+              {[Instagram, Linkedin, Youtube].map((Icon, i) => (
+                <a key={i} href="#" className="w-8 h-8 border border-white/10 flex items-center justify-center text-[var(--dust)] hover:border-[var(--terra-lt)] hover:text-[var(--terra-lt)] transition-all duration-300">
+                  <Icon size={13} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Links */}
+          <div>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--terra-lt)] mb-5">Navigate</p>
+            <ul className="space-y-3">
+              {[['/', 'Home'],['/properties','Properties'],['/about','About'],['/blog','Journal'],['/calculator','Calculator'],['/contact','Contact']].map(([href, label]) => (
+                <li key={href}>
+                  <Link href={href} className="text-sm text-[var(--dust)] hover:text-[var(--terra-lt)] transition-colors duration-200">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Property Types */}
+          <div>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--terra-lt)] mb-5">Properties</p>
+            <ul className="space-y-3">
+              {['Luxury Apartments','Premium Villas','Commercial Spaces','Residential Plots','New Launches','Ready to Move'].map(l => (
+                <li key={l}>
+                  <Link href="/properties" className="text-sm text-[var(--dust)] hover:text-[var(--terra-lt)] transition-colors duration-200">
+                    {l}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--terra-lt)] mb-5">Reach Us</p>
+            <ul className="space-y-4">
+              <li className="flex gap-3 text-sm text-[var(--dust)]">
+                <MapPin size={14} className="text-[var(--terra-lt)] shrink-0 mt-0.5" />
+                <span>401 Patil Tower, BKC, Mumbai 400051</span>
+              </li>
+              <li className="flex gap-3 text-sm text-[var(--dust)]">
+                <Phone size={14} className="text-[var(--terra-lt)] shrink-0" />
+                <span>+91 98765 43210</span>
+              </li>
+              <li className="flex gap-3 text-sm text-[var(--dust)]">
+                <Mail size={14} className="text-[var(--terra-lt)] shrink-0" />
+                <span>hello@patilrealestate.com</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/8 pt-8 flex flex-col md:flex-row justify-between gap-3">
+          <p className="text-xs text-[var(--dust)] opacity-60">© 2025 Patil&apos;s Real Estate. All rights reserved.</p>
+          <p className="text-xs text-[var(--dust)] opacity-60">Crafted with care in Mumbai</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
+EOF
+echo "footer done"
+
+bash
+
+cat > /home/claude/patils-real-estate/components/landing/ScrollSequence.tsx << 'EOF'
+'use client'
+import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import gsap from 'gsap'
+import ScrollTrigger from 'gsap/ScrollTrigger'
+import Link from 'next/link'
+import MagneticButton from '@/components/shared/MagneticButton'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const TOTAL  = 471
+const TRIGGER = 0.88  // frame 421 / 471
+
+export default function ScrollSequence() {
+  const canvasRef  = useRef<HTMLCanvasElement>(null)
+  const wrapRef    = useRef<HTMLDivElement>(null)
+  const frames     = useRef<HTMLImageElement[]>([])
+  const progress   = useRef(0)
+  const rafId      = useRef(0)
+  const needsDraw  = useRef(false)
+  const [loadPct, setLoadPct]   = useState(0)
+  const [loaded, setLoaded]     = useState(false)
+  const [showText, setShowText] = useState(false)
+
+  /* ── Preload ── */
+  useEffect(() => {
+    const imgs: HTMLImageElement[] = []
+    let done = 0
+    for (let i = 1; i <= TOTAL; i++) {
+      const img = new Image()
+      img.src = `/frames/frame-${String(i).padStart(3,'0')}.jpg`
+      imgs.push(img)
+    }
+    Promise.all(imgs.map(img => new Promise<void>(res => {
+      if (img.complete) { done++; setLoadPct(Math.round((done/TOTAL)*100)); res() }
+      else {
+        img.onload  = () => { done++; setLoadPct(Math.round((done/TOTAL)*100)); res() }
+        img.onerror = () => { done++; setLoadPct(Math.round((done/TOTAL)*100)); res() }
+      }
+    }))).then(() => { frames.current = imgs; setLoaded(true) })
+  }, [])
+
+  /* ── Canvas resize ── */
+  const resizeCanvas = () => {
+    const c = canvasRef.current
+    if (!c) return
+    c.width  = window.innerWidth
+    c.height = window.innerHeight
+    needsDraw.current = true
+  }
+  useEffect(() => {
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    return () => window.removeEventListener('resize', resizeCanvas)
+  }, [])
+
+  /* ── Draw function ── */
+  const drawFrame = (idx: number) => {
+    const c = canvasRef.current
+    if (!c) return
+    const ctx = c.getContext('2d')
+    if (!ctx) return
+
+    const img = frames.current[idx]
+    if (img && img.complete && img.naturalWidth > 0) {
+      const sc = Math.max(c.width / img.naturalWidth, c.height / img.naturalHeight)
+      const x  = (c.width  - img.naturalWidth  * sc) / 2
+      const y  = (c.height - img.naturalHeight * sc) / 2
+      ctx.drawImage(img, x, y, img.naturalWidth * sc, img.naturalHeight * sc)
+    } else {
+      // Elegant fallback: warm architectural gradient simulating the descent
+      const p   = idx / TOTAL
+      const r   = Math.round(24  + (180 - 24)  * p)
+      const g   = Math.round(16  + (140 - 16)  * p)
+      const b   = Math.round(10  + (90  - 10)  * p)
+      const grd = ctx.createLinearGradient(0, 0, 0, c.height)
+      grd.addColorStop(0,   `rgb(${r},${g},${b})`)
+      grd.addColorStop(0.6, `rgb(${Math.round(r*0.7)},${Math.round(g*0.7)},${Math.round(b*0.7)})`)
+      grd.addColorStop(1,   `rgb(${Math.round(r*0.5)},${Math.round(g*0.5)},${Math.round(b*0.5)})`)
+      ctx.fillStyle = grd
+      ctx.fillRect(0, 0, c.width, c.height)
+
+      // Subtle grain vignette
+      const vig = ctx.createRadialGradient(c.width/2, c.height/2, 0, c.width/2, c.height/2, c.width*0.7)
+      vig.addColorStop(0, 'rgba(0,0,0,0)')
+      vig.addColorStop(1, 'rgba(0,0,0,0.5)')
+      ctx.fillStyle = vig
+      ctx.fillRect(0, 0, c.width, c.height)
+    }
+  }
+
+  /* ── RAF loop ── */
+  useEffect(() => {
+    const loop = () => {
+      if (needsDraw.current) {
+        const idx = Math.min(Math.floor(progress.current * (TOTAL - 1)), TOTAL - 1)
+        drawFrame(idx)
+        needsDraw.current = false
+      }
+      rafId.current = requestAnimationFrame(loop)
+    }
+    rafId.current = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(rafId.current)
+  }, [])
+
+  /* ── GSAP ScrollTrigger ── */
+  useEffect(() => {
+    if (!loaded) return
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: wrapRef.current,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.6,
+        onUpdate: (self) => {
+          progress.current   = self.progress
+          needsDraw.current  = true
+          setShowText(self.progress >= TRIGGER)
+        },
+      })
+    })
+    needsDraw.current = true
+    return () => ctx.revert()
+  }, [loaded])
+
+  return (
+    <>
+      {/* Loading screen */}
+      <AnimatePresence>
+        {!loaded && (
+          <motion.div
+            key="loader"
+            exit={{ opacity: 0, transition: { duration: 0.7, ease: 'easeInOut' } }}
+            className="fixed inset-0 z-[800] bg-[var(--ink)] flex flex-col items-center justify-center"
+          >
+            <p className="font-display italic text-[var(--terra-lt)] text-sm tracking-[0.3em] mb-3">Patil&apos;s Real Estate</p>
+            <h1 className="font-display text-[clamp(2rem,5vw,4rem)] text-[var(--linen)] font-light tracking-wide mb-14 text-center px-8">
+              Preparing Your Experience
+            </h1>
+            <div className="w-56 h-px bg-white/10 overflow-hidden relative">
+              <div className="absolute inset-y-0 left-0 terra-progress" style={{ width: `${loadPct}%`, transition: 'width 0.2s ease' }} />
+            </div>
+            <p className="font-display text-[var(--terra-lt)] text-2xl mt-4">{loadPct}<span className="text-sm">%</span></p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 600vh scroll wrapper */}
+      <div ref={wrapRef} style={{ height: '600vh' }} className="relative">
+        <div className="sticky top-0 w-full h-screen overflow-hidden">
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+          {/* Text overlay — fades in at frame 421+ */}
+          <AnimatePresence>
+            {showText && (
+              <>
+                {/* Dark scrim */}
+                <motion.div
+                  key="scrim"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                  className="absolute inset-0 bg-[var(--ink)]/50"
+                />
+
+                {/* Content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                  <motion.p
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15, duration: 0.7 }}
+                    className="text-[var(--terra-lt)] text-[10px] tracking-[0.5em] uppercase mb-5"
+                  >
+                    Welcome To
+                  </motion.p>
+
+                  <div className="overflow-hidden">
+                    <motion.h1
+                      initial={{ y: '105%' }}
+                      animate={{ y: 0 }}
+                      transition={{ delay: 0.25, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                      className="font-display text-[clamp(2.8rem,7vw,6.5rem)] text-[var(--linen)] font-normal leading-[1.05] tracking-tight"
+                    >
+                      Patil&apos;s Real Estate
+                    </motion.h1>
+                  </div>
+
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7, duration: 0.8 }}
+                    className="text-[var(--sand)] text-sm md:text-base tracking-[0.2em] mt-5 mb-10 font-light"
+                  >
+                    Mumbai&apos;s Most Trusted Luxury Properties
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.95, duration: 0.7 }}
+                    className="flex flex-col sm:flex-row gap-4 items-center"
+                  >
+                    <MagneticButton>
+                      <Link
+                        href="/properties"
+                        className="inline-block px-10 py-3.5 bg-[var(--terra)] text-white text-[11px] tracking-[0.25em] uppercase hover:bg-[var(--terra-dk)] transition-colors duration-300"
+                      >
+                        Explore Properties
+                      </Link>
+                    </MagneticButton>
+                    <MagneticButton>
+                      <Link
+                        href="/contact"
+                        className="inline-block px-10 py-3.5 border border-white/40 text-white text-[11px] tracking-[0.25em] uppercase hover:border-white transition-colors duration-300"
+                      >
+                        Contact Us
+                      </Link>
+                    </MagneticButton>
+                  </motion.div>
+                </div>
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* Scroll indicator */}
+          {!showText && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5 }}
+              className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
+            >
+              <p className="text-[9px] tracking-[0.4em] uppercase text-white/60">Scroll to Explore</p>
+              <div className="w-px h-12 bg-white/20 relative overflow-hidden">
+                <motion.div
+                  className="absolute inset-x-0 top-0 h-1/2 bg-[var(--terra-lt)]"
+                  animate={{ y: ['-100%', '200%'] }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+EOF
+echo "scroll done"
+
+bash
+
+cat > /home/claude/patils-real-estate/components/landing/FeaturedProperties.tsx << 'EOF'
+'use client'
+import { useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+import { MapPin, ArrowRight, Move } from 'lucide-react'
+import { properties } from '@/data/properties'
+
+const featured = properties.slice(0, 3)
+
+function Card({ prop, index }: { prop: typeof properties[0]; index: number }) {
+  const ref      = useRef(null)
+  const inView   = useInView(ref, { once: true, margin: '-6%' })
+  const cardRef  = useRef<HTMLDivElement>(null)
+  const [hovered, setHovered] = useState(false)
+
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current
+    if (!el) return
+    const r  = el.getBoundingClientRect()
+    const x  = ((e.clientY - r.top)  / r.height - 0.5) * 7
+    const y  = -((e.clientX - r.left) / r.width - 0.5) * 7
+    el.style.transform = `perspective(1400px) rotateX(${x}deg) rotateY(${y}deg) translateZ(4px)`
+    el.style.transition = 'transform 0.12s ease'
+  }
+  const onLeave = () => {
+    if (cardRef.current) {
+      cardRef.current.style.transform = 'perspective(1400px) rotateX(0) rotateY(0) translateZ(0)'
+      cardRef.current.style.transition = 'transform 0.7s cubic-bezier(0.16,1,0.3,1)'
+    }
+    setHovered(false)
+  }
+
+  const statusColors: Record<string, string> = {
+    'Ready to Move':      'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'New Launch':          'bg-[var(--terra)]/10 text-[var(--terra)] border-[var(--terra)]/30',
+    'Under Construction':  'bg-sky-50 text-sky-700 border-sky-200',
+  }
+
+  return (
+    <motion.article
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: index * 0.12 }}
+      className="group"
+    >
+      <div
+        ref={cardRef}
+        onMouseMove={onMouseMove}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={onLeave}
+        className="bg-[var(--white)] border border-[var(--rule)] hover:border-[var(--rule-heavy)] transition-[border-color,box-shadow] duration-500 hover:shadow-[0_8px_40px_rgba(0,0,0,0.08)] overflow-hidden"
+        style={{ willChange: 'transform' }}
+      >
+        {/* Image */}
+        <div className="relative h-[260px] overflow-hidden">
+          <Image
+            src={prop.image}
+            alt={prop.name}
+            fill
+            className={`object-cover transition-transform duration-700 ease-out ${hovered ? 'scale-[1.06]' : 'scale-100'}`}
+          />
+          {/* Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
+          {/* Status badge */}
+          <span className={`absolute top-4 left-4 text-[10px] tracking-[0.15em] uppercase px-3 py-1.5 border font-medium ${statusColors[prop.status] ?? ''}`}>
+            {prop.status}
+          </span>
+
+          {/* Type badge */}
+          <span className="absolute top-4 right-4 text-[10px] tracking-[0.15em] uppercase px-3 py-1.5 bg-[var(--ink)]/70 text-[var(--linen)] backdrop-blur-sm">
+            {prop.type}
+          </span>
+
+          {/* Hover CTA overlay */}
+          <motion.div
+            animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 8 }}
+            transition={{ duration: 0.3 }}
+            className="absolute bottom-4 inset-x-4"
+          >
+            <Link
+              href={`/properties/${prop.id}`}
+              className="flex items-center justify-center gap-2 bg-[var(--terra)] text-white text-[10px] tracking-[0.2em] uppercase py-3 w-full hover:bg-[var(--terra-dk)] transition-colors duration-200"
+            >
+              View Property <ArrowRight size={12} />
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Card body */}
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="font-display text-[1.15rem] font-medium text-[var(--ink)] leading-snug">
+              {prop.name}
+            </h3>
+            <Move size={13} className="text-[var(--dust)] shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
+          <p className="flex items-center gap-1.5 text-[var(--dust)] text-[12px] tracking-wide mb-5">
+            <MapPin size={11} className="text-[var(--terra)]" />
+            {prop.location}
+          </p>
+
+          <div className="flex items-end justify-between">
+            <p className="font-display text-xl text-[var(--terra)] font-medium">{prop.price}</p>
+            <div className="flex gap-2">
+              {prop.bhk > 0 && (
+                <span className="text-[10px] text-[var(--dust)] border border-[var(--rule-heavy)] px-2.5 py-1 tracking-wider">
+                  {prop.bhk} BHK
+                </span>
+              )}
+              <span className="text-[10px] text-[var(--dust)] border border-[var(--rule-heavy)] px-2.5 py-1 tracking-wider">
+                {prop.sqft.toLocaleString()} ft²
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom accent line */}
+        <div className={`h-px bg-[var(--terra)] transition-all duration-500 ${hovered ? 'opacity-100' : 'opacity-0'}`} />
+      </div>
+    </motion.article>
+  )
+}
+
+export default function FeaturedProperties() {
+  const ref    = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-10%' })
+
+  return (
+    <section className="py-28 px-8 md:px-12 max-w-[1440px] mx-auto">
+      {/* Header */}
+      <div ref={ref} className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
+        <div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            className="text-[10px] tracking-[0.4em] uppercase text-[var(--terra)] mb-3"
+          >
+            Handpicked for You
+          </motion.p>
+          <div className="overflow-hidden">
+            <motion.h2
+              initial={{ y: '100%' }}
+              animate={inView ? { y: 0 } : {}}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="font-display text-[clamp(2.2rem,4.5vw,3.8rem)] font-normal text-[var(--ink)] leading-tight"
+            >
+              Featured Properties
+            </motion.h2>
+          </div>
+        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.4 }}
+        >
+          <Link
+            href="/properties"
+            className="group inline-flex items-center gap-2.5 text-[11px] tracking-[0.2em] uppercase text-[var(--terra)] hover:text-[var(--terra-dk)] transition-colors"
+          >
+            View All Properties
+            <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </motion.div>
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {featured.map((p, i) => <Card key={p.id} prop={p} index={i} />)}
+      </div>
+    </section>
+  )
+}
+EOF
+echo "featured done"
+
+bash
+
+cat > /home/claude/patils-real-estate/components/landing/StatsSection.tsx << 'EOF'
+'use client'
+import { useEffect, useRef } from 'react'
+import { useInView } from 'framer-motion'
+import gsap from 'gsap'
+
+const stats = [
+  { val: 500,  suffix: '+',    label: 'Properties Sold',   pre: '' },
+  { val: 15,   suffix: '+',    label: 'Years of Trust',    pre: '' },
+  { val: 98,   suffix: '%',    label: 'Client Satisfaction', pre: '' },
+  { val: 2000, suffix: 'Cr+',  label: 'Worth Transacted',  pre: '₹' },
+]
+
+function Stat({ s, i }: { s: typeof stats[0]; i: number }) {
+  const numRef  = useRef<HTMLSpanElement>(null)
+  const wrapRef = useRef(null)
+  const inView  = useInView(wrapRef, { once: true })
+  const fired   = useRef(false)
+
+  useEffect(() => {
+    if (!inView || fired.current) return
+    fired.current = true
+    const obj = { v: 0 }
+    gsap.to(obj, {
+      v: s.val,
+      duration: 2.4,
+      ease: 'power2.out',
+      delay: i * 0.12,
+      onUpdate() {
+        if (numRef.current) {
+          numRef.current.textContent = s.pre + Math.round(obj.v).toLocaleString('en-IN') + s.suffix
+        }
+      }
+    })
+  }, [inView, s.val, s.pre, s.suffix, i])
+
+  return (
+    <div ref={wrapRef} className="flex flex-col items-center text-center px-4">
+      <span ref={numRef} className="stat-num">{s.pre}0{s.suffix}</span>
+      <p className="text-[11px] tracking-[0.3em] uppercase text-[var(--dust)] mt-3 font-light">{s.label}</p>
+    </div>
+  )
+}
+
+export default function StatsSection() {
+  return (
+    <section className="py-24 bg-[var(--panel)] border-y border-white/5">
+      <div className="max-w-[1440px] mx-auto px-8 md:px-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 divide-x divide-white/8">
+          {stats.map((s, i) => <Stat key={s.label} s={s} i={i} />)}
+        </div>
+      </div>
+    </section>
+  )
+}
+EOF
+echo "stats done"
+
+cat > /home/claude/patils-real-estate/components/landing/TestimonialsSection.tsx << 'EOF'
+'use client'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence, useInView } from 'framer-motion'
+
+const testimonials = [
+  {
+    quote: "Patil's understood our vision before we articulated it. They found a home that exceeded every expectation — not just a property, but the right beginning for our family.",
+    name: 'Arjun & Priya Mehta',
+    city: 'Bandra West, Mumbai',
+    initials: 'AM',
+  },
+  {
+    quote: "In 15 years of real estate transactions I have never encountered a team that combines deep market knowledge with such genuine care for the people they serve. Exceptional.",
+    name: 'Rajesh Sharma',
+    city: 'Worli, Mumbai',
+    initials: 'RS',
+  },
+  {
+    quote: "From the first conversation to key handover, Patil's was present at every step. They negotiated brilliantly on our behalf. I recommend them without the slightest reservation.",
+    name: 'Kavitha & Mohan Rao',
+    city: 'Juhu, Mumbai',
+    initials: 'KR',
+  },
+]
+
+export default function TestimonialsSection() {
+  const [cur, setCur] = useState(0)
+  const ref    = useRef(null)
+  const inView = useInView(ref, { once: true })
+
+  useEffect(() => {
+    const id = setInterval(() => setCur(c => (c + 1) % testimonials.length), 4500)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <section ref={ref} className="py-28 px-8 md:px-12 bg-[var(--cream)]">
+      <div className="max-w-[1440px] mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+          <div>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--terra)] mb-3">Testimonials</p>
+            <div className="overflow-hidden">
+              <motion.h2
+                initial={{ y: '100%' }}
+                animate={inView ? { y: 0 } : {}}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="font-display text-[clamp(2rem,4vw,3.5rem)] font-normal text-[var(--ink)]"
+              >
+                What Our Clients Say
+              </motion.h2>
+            </div>
+          </div>
+          {/* Dots */}
+          <div className="flex gap-2 items-center">
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCur(i)}
+                className={`transition-all duration-300 rounded-full ${i === cur ? 'w-8 h-1.5 bg-[var(--terra)]' : 'w-1.5 h-1.5 bg-[var(--sand)]'}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Testimonial card */}
+        <div className="relative overflow-hidden" style={{ minHeight: '220px' }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={cur}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              className="grid md:grid-cols-[1fr_auto] gap-12 items-center"
+            >
+              <div>
+                {/* Opening quote mark */}
+                <p className="font-display text-[5rem] text-[var(--terra)] leading-none mb-0 select-none" aria-hidden>&#8220;</p>
+                <p className="font-display text-[clamp(1.1rem,2.2vw,1.6rem)] italic font-normal text-[var(--ink-soft)] leading-relaxed -mt-4">
+                  {testimonials[cur].quote}
+                </p>
+              </div>
+              <div className="flex flex-col items-center md:items-end gap-3">
+                <div className="w-14 h-14 bg-[var(--terra)] flex items-center justify-center text-white font-display text-lg">
+                  {testimonials[cur].initials}
+                </div>
+                <p className="text-sm font-medium text-[var(--ink)] text-center md:text-right">{testimonials[cur].name}</p>
+                <p className="text-[11px] text-[var(--dust)] tracking-wider text-center md:text-right">{testimonials[cur].city}</p>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-[var(--terra)] text-sm">★</span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
+  )
+}
+EOF
+echo "testimonials done"
+Output
+
+testimonials done
+
+
+cat > /home/claude/patils-real-estate/app/properties/page.tsx << 'EOF'
+'use client'
+import { useState, useRef } from 'react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+import { MapPin, Heart, LayoutGrid, List, SlidersHorizontal, ArrowRight, X } from 'lucide-react'
+import { properties, Property } from '@/data/properties'
+
+type PropertyType = 'Apartment' | 'Villa' | 'Plot' | 'Commercial'
+type StatusType = 'Ready to Move' | 'New Launch' | 'Under Construction'
+
+const TYPES: PropertyType[]   = ['Apartment','Villa','Plot','Commercial']
+const BHKS  = [1,2,3,4]
+const LOCS  = ['Mumbai','Pune','Nashik','Thane']
+const STATS: StatusType[] = ['Ready to Move','New Launch','Under Construction']
+
+const statusStyle: Record<string, string> = {
+  'Ready to Move':     'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  'New Launch':         'bg-[var(--terra)]/10 text-[var(--terra)] border border-[var(--terra)]/25',
+  'Under Construction': 'bg-sky-50 text-sky-700 border border-sky-200',
+}
+
+function PropertyCard({ prop, index, grid }: { prop: Property; index: number; grid: boolean }) {
+  const ref    = useRef(null)
+  const inView = useInView(ref, { once: true })
+  const cardEl = useRef<HTMLDivElement>(null)
+  const [wished,  setWished]  = useState(false)
+  const [hovered, setHovered] = useState(false)
+
+  const tilt = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardEl.current; if (!el) return
+    const r  = el.getBoundingClientRect()
+    const x  = ((e.clientY - r.top)  / r.height - 0.5) * 6
+    const y  = -((e.clientX - r.left) / r.width - 0.5) * 6
+    el.style.transform = `perspective(1400px) rotateX(${x}deg) rotateY(${y}deg)`
+    el.style.transition = 'transform 0.12s ease'
+  }
+  const unTilt = () => {
+    if (cardEl.current) {
+      cardEl.current.style.transform = 'perspective(1400px) rotateX(0) rotateY(0)'
+      cardEl.current.style.transition = 'transform 0.7s cubic-bezier(0.16,1,0.3,1)'
+    }
+    setHovered(false)
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 38 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.75, ease: [0.16,1,0.3,1], delay: (index % 6) * 0.07 }}
+      className={grid ? '' : 'flex gap-0'}
+    >
+      <div
+        ref={cardEl}
+        onMouseMove={tilt}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={unTilt}
+        className="bg-[var(--white)] border border-[var(--rule)] hover:border-[var(--rule-heavy)] hover:shadow-[0_6px_32px_rgba(0,0,0,0.07)] transition-all duration-400 overflow-hidden h-full"
+        style={{ display: grid ? 'block' : 'flex', willChange: 'transform' }}
+      >
+        {/* Image */}
+        <div className={`relative overflow-hidden shrink-0 ${grid ? 'h-52' : 'w-60 h-auto'}`}>
+          <Image
+            src={prop.image}
+            alt={prop.name}
+            fill
+            className={`object-cover transition-transform duration-700 ${hovered ? 'scale-[1.06]' : 'scale-100'}`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+
+          <span className={`absolute top-3 left-3 text-[9px] font-medium tracking-[0.15em] uppercase px-2.5 py-1 ${statusStyle[prop.status] ?? ''}`}>
+            {prop.status}
+          </span>
+
+          <button
+            onClick={() => setWished(w => !w)}
+            className="absolute top-3 right-3 w-7 h-7 bg-white/80 backdrop-blur-sm flex items-center justify-center"
+            aria-label="Wishlist"
+          >
+            <Heart
+              size={13}
+              className={wished ? 'fill-[var(--terra)] text-[var(--terra)]' : 'text-[var(--ink-mute)]'}
+            />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 flex flex-col justify-between flex-1 min-w-0">
+          <div>
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+              <h3 className="font-display text-[1.05rem] font-medium text-[var(--ink)] leading-snug">{prop.name}</h3>
+              <span className="text-[9px] text-[var(--dust)] border border-[var(--rule-heavy)] px-2 py-0.5 tracking-wider shrink-0 mt-0.5">
+                {prop.type}
+              </span>
+            </div>
+            <p className="flex items-center gap-1.5 text-[11px] text-[var(--dust)] mb-4">
+              <MapPin size={10} className="text-[var(--terra)] shrink-0" />
+              {prop.location}
+            </p>
+            <p className="font-display text-[1.3rem] text-[var(--terra)] font-medium mb-4">{prop.price}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {prop.bhk > 0 && (
+                <span className="text-[10px] text-[var(--ink-mute)] border border-[var(--rule-heavy)] px-2.5 py-1 tracking-wide">
+                  {prop.bhk} BHK
+                </span>
+              )}
+              <span className="text-[10px] text-[var(--ink-mute)] border border-[var(--rule-heavy)] px-2.5 py-1 tracking-wide">
+                {prop.sqft.toLocaleString()} ft²
+              </span>
+            </div>
+          </div>
+
+          <Link
+            href={`/properties/${prop.id}`}
+            className="mt-5 flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-[var(--terra)] hover:text-[var(--terra-dk)] transition-colors group w-fit"
+          >
+            View Details
+            <ArrowRight size={11} className="transition-transform group-hover:translate-x-1 duration-200" />
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+export default function PropertiesPage() {
+  const [grid,     setGrid]     = useState(true)
+  const [types,    setTypes]    = useState<PropertyType[]>([])
+  const [bhks,     setBhks]     = useState<number[]>([])
+  const [locs,     setLocs]     = useState<string[]>([])
+  const [stats,    setStats]    = useState<StatusType[]>([])
+  const [sort,     setSort]     = useState('default')
+  const [mFilter,  setMFilter]  = useState(false)
+
+  const tog = <T,>(arr: T[], item: T, setter: (a:T[])=>void) =>
+    setter(arr.includes(item) ? arr.filter(x => x !== item) : [...arr, item])
+
+  const reset = () => { setTypes([]); setBhks([]); setLocs([]); setStats([]) }
+
+  const filtered = properties.filter(p => {
+    if (types.length && !types.includes(p.type as PropertyType)) return false
+    if (bhks.length  && !(bhks.includes(p.bhk) || (bhks.includes(4) && p.bhk >= 4))) return false
+    if (locs.length  && !locs.some(l => p.location.includes(l))) return false
+    if (stats.length && !stats.includes(p.status as StatusType)) return false
+    return true
+  }).sort((a,b) => {
+    const va = parseFloat(a.price.replace(/[^\d.]/g,''))
+    const vb = parseFloat(b.price.replace(/[^\d.]/g,''))
+    if (sort==='price-asc')  return va - vb
+    if (sort==='price-desc') return vb - va
+    return 0
+  })
+
+  const FilterPanel = () => (
+    <div className="space-y-8">
+      {/* Types */}
+      <div>
+        <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--terra)] mb-3 font-medium">Property Type</p>
+        <div className="space-y-2">
+          {TYPES.map(t => (
+            <label key={t} className="flex items-center gap-3 group cursor-none">
+              <span className={`w-4 h-4 border flex items-center justify-center transition-colors ${types.includes(t) ? 'bg-[var(--terra)] border-[var(--terra)]' : 'border-[var(--rule-heavy)]'}`}>
+                {types.includes(t) && <span className="text-white text-[10px]">✓</span>}
+              </span>
+              <input type="checkbox" className="sr-only" checked={types.includes(t)} onChange={() => tog(types, t, setTypes)} />
+              <span className="text-[13px] text-[var(--ink-mute)] group-hover:text-[var(--ink)] transition-colors">{t}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* BHK */}
+      <div>
+        <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--terra)] mb-3 font-medium">BHK</p>
+        <div className="flex flex-wrap gap-2">
+          {BHKS.map(b => (
+            <button
+              key={b}
+              onClick={() => tog(bhks, b, setBhks)}
+              className={`px-4 py-1.5 text-[11px] tracking-wider border transition-all duration-200 ${
+                bhks.includes(b) ? 'border-[var(--terra)] text-[var(--terra)] bg-[var(--terra)]/8' : 'border-[var(--rule-heavy)] text-[var(--ink-mute)] hover:border-[var(--terra)]'
+              }`}
+            >
+              {b === 4 ? '4+' : b}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Location */}
+      <div>
+        <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--terra)] mb-3 font-medium">Location</p>
+        <div className="space-y-2">
+          {LOCS.map(l => (
+            <label key={l} className="flex items-center gap-3 group cursor-none">
+              <span className={`w-4 h-4 border flex items-center justify-center transition-colors ${locs.includes(l) ? 'bg-[var(--terra)] border-[var(--terra)]' : 'border-[var(--rule-heavy)]'}`}>
+                {locs.includes(l) && <span className="text-white text-[10px]">✓</span>}
+              </span>
+              <input type="checkbox" className="sr-only" checked={locs.includes(l)} onChange={() => tog(locs, l, setLocs)} />
+              <span className="text-[13px] text-[var(--ink-mute)] group-hover:text-[var(--ink)] transition-colors">{l}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Status */}
+      <div>
+        <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--terra)] mb-3 font-medium">Status</p>
+        <div className="space-y-2">
+          {STATS.map(s => (
+            <label key={s} className="flex items-center gap-3 group cursor-none">
+              <span className={`w-4 h-4 border flex items-center justify-center transition-colors ${stats.includes(s) ? 'bg-[var(--terra)] border-[var(--terra)]' : 'border-[var(--rule-heavy)]'}`}>
+                {stats.includes(s) && <span className="text-white text-[10px]">✓</span>}
+              </span>
+              <input type="checkbox" className="sr-only" checked={stats.includes(s)} onChange={() => tog(stats, s, setStats)} />
+              <span className="text-[13px] text-[var(--ink-mute)] group-hover:text-[var(--ink)] transition-colors">{s}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button
+          onClick={reset}
+          className="flex-1 py-2.5 text-[10px] tracking-[0.2em] uppercase border border-[var(--rule-heavy)] text-[var(--ink-mute)] hover:border-[var(--terra)] hover:text-[var(--terra)] transition-all duration-200"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <main className="min-h-screen bg-[var(--linen)] pt-[72px]">
+      {/* Page header */}
+      <div className="border-b border-[var(--rule)] px-8 md:px-12 py-14 max-w-[1440px] mx-auto">
+        <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--terra)] mb-3">Browse</p>
+        <h1 className="font-display text-[clamp(2.5rem,5.5vw,4.5rem)] font-normal text-[var(--ink)]">Our Properties</h1>
+        <p className="text-[var(--dust)] mt-2.5 text-sm">Curated residences across Mumbai, Pune & Nashik</p>
+      </div>
+
+      <div className="max-w-[1440px] mx-auto px-8 md:px-12 py-10 flex gap-10 items-start">
+        {/* Sidebar */}
+        <aside className="hidden lg:block w-64 shrink-0 sticky top-24">
+          <div className="bg-[var(--white)] border border-[var(--rule)] p-7">
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-[var(--ink)] flex items-center gap-2 font-medium">
+                <SlidersHorizontal size={12} className="text-[var(--terra)]" /> Filters
+              </p>
+            </div>
+            <FilterPanel />
+          </div>
+        </aside>
+
+        {/* Main */}
+        <div className="flex-1 min-w-0">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between mb-7 flex-wrap gap-4">
+            <p className="text-[13px] text-[var(--ink-mute)]">
+              <span className="text-[var(--ink)] font-medium">{filtered.length}</span> properties found
+            </p>
+            <div className="flex items-center gap-5">
+              {/* Mobile filter button */}
+              <button
+                onClick={() => setMFilter(true)}
+                className="lg:hidden flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-[var(--ink-mute)] border border-[var(--rule-heavy)] px-4 py-2"
+              >
+                <SlidersHorizontal size={12} /> Filters
+              </button>
+
+              <select
+                value={sort}
+                onChange={e => setSort(e.target.value)}
+                className="bg-transparent text-[12px] text-[var(--ink-mute)] outline-none border-b border-[var(--rule-heavy)] pb-1 pr-6 tracking-wider"
+              >
+                <option value="default">Sort: Default</option>
+                <option value="price-asc">Price: Low → High</option>
+                <option value="price-desc">Price: High → Low</option>
+              </select>
+
+              <div className="flex border border-[var(--rule-heavy)] divide-x divide-[var(--rule-heavy)]">
+                <button onClick={() => setGrid(true)} className={`p-2 transition-colors ${grid ? 'text-[var(--terra)] bg-[var(--terra)]/8' : 'text-[var(--dust)]'}`}>
+                  <LayoutGrid size={14} />
+                </button>
+                <button onClick={() => setGrid(false)} className={`p-2 transition-colors ${!grid ? 'text-[var(--terra)] bg-[var(--terra)]/8' : 'text-[var(--dust)]'}`}>
+                  <List size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Cards */}
+          <AnimatePresence>
+            <div className={grid ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5' : 'flex flex-col gap-5'}>
+              {filtered.map((p, i) => <PropertyCard key={p.id} prop={p} index={i} grid={grid} />)}
+            </div>
+          </AnimatePresence>
+
+          {filtered.length === 0 && (
+            <div className="py-32 text-center">
+              <p className="font-display text-3xl text-[var(--sand)] mb-3">No properties match.</p>
+              <button onClick={reset} className="text-[var(--terra)] text-[11px] tracking-[0.25em] uppercase hover:opacity-60 transition-opacity">
+                Clear All Filters
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile filter drawer */}
+      <AnimatePresence>
+        {mFilter && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[800] bg-black/40"
+            onClick={() => setMFilter(false)}
+          >
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', ease: [0.16,1,0.3,1], duration: 0.45 }}
+              onClick={e => e.stopPropagation()}
+              className="absolute inset-y-0 left-0 w-80 bg-[var(--white)] p-8 overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <p className="text-[10px] tracking-[0.35em] uppercase font-medium">Filters</p>
+                <button onClick={() => setMFilter(false)}><X size={18} className="text-[var(--ink-mute)]" /></button>
+              </div>
+              <FilterPanel />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </main>
+  )
+}
+EOF
+echo "properties page done"
+
+cat > "/home/claude/patils-real-estate/app/properties/[id]/page.tsx" << 'EOF'
+'use client'
+import { useState } from 'react'
+import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MapPin, Phone, MessageSquare, Download, Calendar, ChevronDown, ChevronUp,
+         Waves, Dumbbell, Car, Shield, Trees, Building, Zap, ArrowUpDown } from 'lucide-react'
+import { properties } from '@/data/properties'
+import MagneticButton from '@/components/shared/MagneticButton'
+
+const amenities = [
+  { icon: Waves,       label: 'Swimming Pool'  },
+  { icon: Dumbbell,    label: 'Gymnasium'       },
+  { icon: Car,         label: 'Parking'         },
+  { icon: Shield,      label: 'Security'        },
+  { icon: ArrowUpDown, label: 'High-Speed Lift' },
+  { icon: Trees,       label: 'Garden'          },
+  { icon: Building,    label: 'Clubhouse'       },
+  { icon: Zap,         label: 'Power Backup'    },
+]
+
+export default function PropertyDetail({ params }: { params: { id: string } }) {
+  const prop = properties.find(p => p.id === params.id) ?? properties[0]
+  const thumbs = [prop.image, ...['a','b','c','d'].map(s => `https://picsum.photos/seed/${prop.id}${s}/800/600`)]
+
+  const [active,   setActive]   = useState(prop.image)
+  const [expanded, setExpanded] = useState(false)
+  const [form,     setForm]     = useState({ name:'', phone:'', message:'' })
+  const [done,     setDone]     = useState(false)
+  const [loading,  setLoading]  = useState(false)
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    await new Promise(r => setTimeout(r, 1600))
+    setLoading(false); setDone(true)
+  }
+
+  const statusColors: Record<string,string> = {
+    'Ready to Move':     'bg-emerald-50 text-emerald-700',
+    'New Launch':         'bg-[var(--terra)]/10 text-[var(--terra)]',
+    'Under Construction': 'bg-sky-50 text-sky-700',
+  }
+
+  return (
+    <main className="min-h-screen bg-[var(--linen)] pt-[72px]">
+      {/* Hero Image */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, ease: [0.16,1,0.3,1] }}
+        className="relative h-[62vh] overflow-hidden"
+      >
+        <Image src={prop.image} alt={prop.name} fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)]/70 via-[var(--ink)]/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 px-10 py-10 flex items-end justify-between">
+          <div>
+            <span className={`inline-block text-[9px] tracking-[0.2em] uppercase px-3 py-1.5 mb-3 font-medium ${statusColors[prop.status] ?? ''}`}>
+              {prop.status}
+            </span>
+            <h1 className="font-display text-[clamp(1.8rem,4vw,3.5rem)] text-white font-normal leading-tight">
+              {prop.name}
+            </h1>
+            <p className="flex items-center gap-2 text-white/70 text-sm mt-2">
+              <MapPin size={13} className="text-[var(--terra-lt)]" /> {prop.location}
+            </p>
+          </div>
+          <p className="font-display text-[clamp(1.5rem,3vw,2.5rem)] text-[var(--terra-lt)] font-medium hidden md:block">
+            {prop.price}
+          </p>
+        </div>
+      </motion.div>
+
+      <div className="max-w-[1440px] mx-auto px-8 md:px-12 py-14 flex gap-12 flex-col lg:flex-row">
+        {/* Main content */}
+        <div className="flex-1 min-w-0">
+          {/* Gallery */}
+          <div className="mb-12">
+            <div className="relative h-[400px] overflow-hidden mb-3 bg-[var(--cream)]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.45 }}
+                  className="absolute inset-0"
+                >
+                  <Image src={active} alt={prop.name} fill className="object-cover" />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
+              {thumbs.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActive(img)}
+                  className={`relative shrink-0 w-[88px] h-[58px] overflow-hidden transition-all duration-200 ${
+                    active === img ? 'ring-2 ring-[var(--terra)] ring-offset-2 ring-offset-[var(--linen)]' : 'opacity-55 hover:opacity-100'
+                  }`}
+                >
+                  <Image src={img} alt="" fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Highlight bar */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-0 border border-[var(--rule)] mb-12 divide-x divide-[var(--rule)] bg-[var(--white)]">
+            {[
+              { label: 'Configuration', value: prop.bhk > 0 ? `${prop.bhk} BHK` : 'N/A' },
+              { label: 'Area',          value: `${prop.sqft.toLocaleString()} ft²` },
+              { label: 'Floor',         value: prop.floor ?? 'N/A' },
+              { label: 'Facing',        value: prop.facing ?? 'N/A' },
+              { label: 'Possession',    value: prop.possession ?? 'Immediate' },
+            ].map(({ label, value }) => (
+              <div key={label} className="p-5 text-center">
+                <p className="text-[9px] tracking-[0.3em] uppercase text-[var(--dust)] mb-1.5">{label}</p>
+                <p className="text-[13px] font-medium text-[var(--ink)]">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Description */}
+          <div className="mb-12 pb-12 border-b border-[var(--rule)]">
+            <h2 className="font-display text-2xl font-normal text-[var(--ink)] mb-5">About This Property</h2>
+            <div className={`overflow-hidden transition-all duration-500 ${expanded ? 'max-h-[400px]' : 'max-h-[72px]'}`}>
+              <p className="text-[var(--ink-mute)] leading-7 text-[15px]">{prop.description}</p>
+              <p className="text-[var(--ink-mute)] leading-7 text-[15px] mt-4">
+                The development features meticulously landscaped green spaces, a state-of-the-art clubhouse, and round-the-clock security to ensure residents enjoy an unparalleled lifestyle. Every element has been considered — from the lobby to the sky.
+              </p>
+            </div>
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="flex items-center gap-1.5 text-[var(--terra)] text-[11px] tracking-[0.2em] uppercase mt-4 hover:opacity-60 transition-opacity"
+            >
+              {expanded ? <><ChevronUp size={13} /> Read Less</> : <><ChevronDown size={13} /> Read More</>}
+            </button>
+          </div>
+
+          {/* Amenities */}
+          <div className="mb-12 pb-12 border-b border-[var(--rule)]">
+            <h2 className="font-display text-2xl font-normal text-[var(--ink)] mb-7">Amenities</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {amenities.map(({ icon: Icon, label }, i) => (
+                <motion.div
+                  key={label}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.5 }}
+                  className="group flex flex-col items-center gap-3 p-5 bg-[var(--white)] border border-[var(--rule)] hover:border-[var(--terra)] hover:bg-[var(--terra)]/4 transition-all duration-300"
+                >
+                  <Icon size={20} className="text-[var(--terra)] group-hover:scale-110 transition-transform duration-300" />
+                  <p className="text-[11px] text-[var(--ink-mute)] tracking-wider text-center">{label}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Floor Plan */}
+          <div className="mb-12 pb-12 border-b border-[var(--rule)]">
+            <h2 className="font-display text-2xl font-normal text-[var(--ink)] mb-5">Floor Plan</h2>
+            <div className="h-60 bg-[var(--cream)] border border-[var(--rule)] flex items-center justify-center">
+              <p className="text-[var(--dust)] text-sm tracking-wider">Floor Plan Preview</p>
+            </div>
+            <button className="mt-4 flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase border border-[var(--rule-heavy)] text-[var(--ink-mute)] px-5 py-2.5 hover:border-[var(--terra)] hover:text-[var(--terra)] transition-all duration-300">
+              <Download size={12} /> Download Floor Plan
+            </button>
+          </div>
+
+          {/* Neighbourhood */}
+          <div className="mb-12 pb-12 border-b border-[var(--rule)]">
+            <h2 className="font-display text-2xl font-normal text-[var(--ink)] mb-5">Neighbourhood</h2>
+            <div className="flex flex-wrap gap-3">
+              {['2 min — Metro Station','5 min — International School','10 min — Hospital','15 min — International Airport'].map(pill => (
+                <span key={pill} className="text-[11px] tracking-wider border border-[var(--rule-heavy)] text-[var(--ink-mute)] px-4 py-2">
+                  {pill}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Map */}
+          <div>
+            <h2 className="font-display text-2xl font-normal text-[var(--ink)] mb-5">Location</h2>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.0!2d72.8347!3d19.0596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDAzJzM0LjYiTiA3MsKwNTAnMDUuMCJF!5e0!3m2!1sen!2sin!4v1"
+              width="100%" height="320"
+              style={{ border: '1px solid var(--rule)', display: 'block' }}
+              allowFullScreen loading="lazy" title="Property Location"
+            />
+          </div>
+        </div>
+
+        {/* Sticky Sidebar */}
+        <aside className="lg:w-[340px] shrink-0">
+          <div className="sticky top-24 bg-[var(--white)] border border-[var(--rule)]">
+            {/* Price header */}
+            <div className="p-7 border-b border-[var(--rule)]">
+              <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--dust)] mb-1.5">Starting Price</p>
+              <p className="font-display text-[2rem] text-[var(--terra)] font-medium">{prop.price}</p>
+              <p className="text-[12px] text-[var(--dust)] mt-1">EMI from ₹1.8L/month*</p>
+            </div>
+
+            {/* CTAs */}
+            <div className="p-7 border-b border-[var(--rule)] space-y-3">
+              <MagneticButton>
+                <button className="w-full py-3.5 bg-[var(--terra)] text-white text-[10px] font-medium tracking-[0.25em] uppercase hover:bg-[var(--terra-dk)] transition-colors flex items-center justify-center gap-2">
+                  <Calendar size={13} /> Schedule a Visit
+                </button>
+              </MagneticButton>
+              <button className="w-full py-3.5 border border-[var(--rule-heavy)] text-[var(--ink-mute)] text-[10px] tracking-[0.25em] uppercase hover:border-[var(--terra)] hover:text-[var(--terra)] transition-all flex items-center justify-center gap-2">
+                <Download size={13} /> Download Brochure
+              </button>
+              <a href="tel:+919876543210"
+                className="w-full py-3.5 border border-[var(--rule-heavy)] text-[var(--ink-mute)] text-[10px] tracking-[0.2em] uppercase hover:border-[var(--terra)] hover:text-[var(--terra)] transition-all flex items-center justify-center gap-2">
+                <Phone size={13} /> +91 98765 43210
+              </a>
+            </div>
+
+            {/* Agent */}
+            <div className="p-7 border-b border-[var(--rule)]">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-11 h-11 bg-[var(--terra)] flex items-center justify-center text-white font-display font-medium">
+                  SP
+                </div>
+                <div>
+                  <p className="text-[13px] font-medium text-[var(--ink)]">Suresh Patil</p>
+                  <p className="text-[11px] text-[var(--dust)]">Senior Advisor · 10 yrs exp</p>
+                </div>
+              </div>
+              <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer"
+                className="w-full py-2.5 border border-emerald-200 text-emerald-700 text-[10px] tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-emerald-50 transition-colors">
+                <MessageSquare size={12} /> WhatsApp Agent
+              </a>
+            </div>
+
+            {/* Enquiry form */}
+            <div className="p-7">
+              <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--ink)] font-medium mb-6">Quick Enquiry</p>
+              {done ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-8"
+                >
+                  <div className="w-11 h-11 border border-[var(--terra)] flex items-center justify-center mx-auto mb-3 text-[var(--terra)] text-xl">
+                    ✓
+                  </div>
+                  <p className="text-[13px] font-medium text-[var(--ink)] mb-1">Enquiry Received</p>
+                  <p className="text-[12px] text-[var(--dust)]">We&apos;ll call you within 2 hours.</p>
+                </motion.div>
+              ) : (
+                <form onSubmit={submit} className="space-y-5">
+                  {[['name','Your Name','text'],['phone','Phone Number','tel'],['message','Message','text']].map(([f,l,t]) => (
+                    <div key={f} className="fl">
+                      <input type={t} placeholder=" " value={form[f as keyof typeof form]} onChange={e => setForm(d => ({...d,[f]:e.target.value}))} required={f!=='message'} />
+                      <label>{l}</label>
+                    </div>
+                  ))}
+                  <button
+                    type="submit" disabled={loading}
+                    className="w-full py-3.5 bg-[var(--terra)] text-white text-[10px] font-medium tracking-[0.25em] uppercase hover:bg-[var(--terra-dk)] transition-colors flex items-center justify-center gap-2"
+                  >
+                    {loading ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Send Enquiry →'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  )
+}
+EOF
+echo "property detail done"
+
+cat > /home/claude/patils-real-estate/app/about/page.tsx << 'EOF'
+'use client'
+import { useRef, useEffect } from 'react'
+import Image from 'next/image'
+import { motion, useInView } from 'framer-motion'
+import gsap from 'gsap'
+import ScrollTrigger from 'gsap/ScrollTrigger'
+import { Shield, Star, Award } from 'lucide-react'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const team = [
+  { name: 'Ramesh Patil',   title: 'Founder & CEO',        seed: 'team1', bio: '25+ years shaping Mumbai\'s luxury real estate landscape with an unwavering commitment to excellence.' },
+  { name: 'Priya Patil',    title: 'Director – Operations', seed: 'team2', bio: 'Architects of seamless client experiences from inquiry to possession.' },
+  { name: 'Amit Kulkarni',  title: 'Head of Sales',         seed: 'team3', bio: '₹500Cr in sales. Master negotiator. Trusted advisor to Mumbai\'s discerning buyers.' },
+  { name: 'Sneha Desai',    title: 'Client Relations',      seed: 'team4', bio: 'The heartbeat of Patil\'s aftercare. Every client, a lifelong relationship.' },
+]
+
+const milestones = [
+  { year: '2009', title: 'Founded',              desc: 'Patil\'s Real Estate established in Bandra with 2 people and a singular vision.' },
+  { year: '2012', title: 'First 100 Sold',       desc: '100 properties transacted. Pune branch launched.' },
+  { year: '2015', title: 'Luxury Division',      desc: 'Launched premium vertical for the ₹5Cr+ segment.' },
+  { year: '2018', title: 'CREDAI Award',         desc: 'Recognised as Best Real Estate Agency in Maharashtra.' },
+  { year: '2021', title: 'Digital First',        desc: 'Launched virtual tours. 300+ properties sold remotely.' },
+  { year: '2024', title: '₹2000Cr Transacted',   desc: 'Nashik office opened. 80-member team. 500+ families served.' },
+]
+
+const awards = ['CREDAI Best Agency 2018','Times Property Award 2019','ET Best Real Estate Brand 2020','CNBC-TV18 Top Broker 2021','Realty Plus Achievers 2022','Forbes India Top 50 2023']
+
+const values = [
+  { icon: Shield, title: 'Trust',         desc: 'Fifteen years of promises kept. Every transaction handled with the care we\'d give our own family.' },
+  { icon: Star,   title: 'Transparency',  desc: 'No hidden charges. No inflated valuations. Clear communication at every single step.' },
+  { icon: Award,  title: 'Excellence',    desc: 'We don\'t find properties. We find the right property for the right person at the right moment.' },
+]
+
+export default function AboutPage() {
+  const tlRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (!tlRef.current) return
+      const fill = tlRef.current.querySelector('.tl-fill') as HTMLElement
+      if (!fill) return
+      gsap.fromTo(fill, { height: '0%' }, {
+        height: '100%', ease: 'none',
+        scrollTrigger: { trigger: tlRef.current, start: 'top 65%', end: 'bottom 40%', scrub: 1 }
+      })
+    })
+    return () => ctx.revert()
+  }, [])
+
+  return (
+    <main className="min-h-screen bg-[var(--linen)] pt-[72px]">
+      {/* Hero */}
+      <section className="relative h-[72vh] flex items-end overflow-hidden">
+        <div className="absolute inset-0">
+          <Image src="https://picsum.photos/seed/about-hero/1600/900" alt="About" fill className="object-cover" />
+          <div className="absolute inset-0 bg-[var(--ink)]/60" />
+        </div>
+        <div className="relative z-10 px-10 md:px-14 pb-16 max-w-[1440px] w-full">
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-[var(--terra-lt)] text-[10px] tracking-[0.45em] uppercase mb-4"
+          >
+            Our Story
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 1, ease: [0.16,1,0.3,1] }}
+            className="font-display text-[clamp(3rem,8vw,7rem)] text-[var(--linen)] font-normal leading-none"
+          >
+            Building Trust.
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="font-display italic text-[clamp(1.2rem,3vw,2rem)] text-[var(--terra-lt)] mt-3"
+          >
+            Since 2009. One family at a time.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Story */}
+      <section className="max-w-[1440px] mx-auto px-8 md:px-12 py-28 grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+        <div>
+          <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--terra)] mb-5">Who We Are</p>
+          <p className="font-display italic text-[clamp(1.5rem,3vw,2.2rem)] text-[var(--ink)] leading-snug">
+            &ldquo;We don&apos;t sell properties. We help people find where their life will unfold.&rdquo;
+          </p>
+        </div>
+        <div className="space-y-5 text-[var(--ink-mute)] leading-7 text-[15px]">
+          <p>Patil&apos;s Real Estate was born in 2009 from a singular belief: every family deserves a trusted partner when making the most significant purchase of their lives.</p>
+          <p>Starting with a small office in Bandra, Ramesh Patil built something remarkable — a reputation for integrity in an industry not always known for it. Word spread. Families referred families. With each transaction, the trust compounded.</p>
+          <p>Today, with offices across Mumbai, Pune, and Nashik, ₹2000 Crore transacted, and 500+ families served, we remain guided by the same north star: your interests, first and always.</p>
+        </div>
+      </section>
+
+      {/* Team */}
+      <section className="bg-[var(--cream)] py-28 px-8 md:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--terra)] mb-3">The People</p>
+          <h2 className="font-display text-[clamp(2rem,4vw,3.5rem)] font-normal text-[var(--ink)] mb-14">Our Leadership Team</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {team.map((m, i) => {
+              const ref = useRef(null)
+              const inView = useInView(ref, { once: true })
+              return (
+                <motion.div
+                  key={m.name} ref={ref}
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: i * 0.1, duration: 0.8, ease: [0.16,1,0.3,1] }}
+                  className="group bg-[var(--white)] border border-[var(--rule)] overflow-hidden hover:border-[var(--rule-heavy)] transition-all duration-400"
+                >
+                  <div className="relative h-64 overflow-hidden">
+                    <Image
+                      src={`https://picsum.photos/seed/${m.seed}/400/480`}
+                      alt={m.name} fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-[var(--ink)]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex items-end p-5">
+                      <p className="text-white text-[13px] leading-relaxed">{m.bio}</p>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <p className="font-medium text-[var(--ink)] text-[14px]">{m.name}</p>
+                    <p className="text-[11px] text-[var(--terra)] tracking-wider mt-1">{m.title}</p>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Values */}
+      <section className="py-28 px-8 md:px-12 max-w-[1440px] mx-auto">
+        <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--terra)] mb-3">What We Stand For</p>
+        <h2 className="font-display text-[clamp(2rem,4vw,3.5rem)] font-normal text-[var(--ink)] mb-14">Our Values</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {values.map(({ icon: Icon, title, desc }, i) => {
+            const ref = useRef(null)
+            const inView = useInView(ref, { once: true })
+            return (
+              <motion.div
+                key={title} ref={ref}
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: i * 0.12, duration: 0.8 }}
+                className="group bg-[var(--white)] border border-[var(--rule)] border-l-2 border-l-[var(--terra)] p-8 hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-shadow duration-400"
+              >
+                <Icon size={24} className="text-[var(--terra)] mb-5 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
+                <h3 className="font-display text-xl text-[var(--ink)] mb-3">{title}</h3>
+                <p className="text-[var(--ink-mute)] text-[14px] leading-relaxed">{desc}</p>
+              </motion.div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* Awards Ticker */}
+      <div className="overflow-hidden bg-[var(--panel)] border-y border-white/8 py-4">
+        <div className="award-track">
+          {[...awards, ...awards].map((a, i) => (
+            <div key={i} className="flex items-center shrink-0 mx-8">
+              <Award size={13} className="text-[var(--terra-lt)] mr-3" />
+              <span className="font-display italic text-[var(--sand)] tracking-widest whitespace-nowrap text-[15px]">{a}</span>
+              <span className="ml-8 text-white/10 text-lg">|</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <section className="py-28 px-8 md:px-12 max-w-[900px] mx-auto">
+        <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--terra)] mb-3 text-center">Our Journey</p>
+        <h2 className="font-display text-[clamp(2rem,4vw,3.5rem)] font-normal text-[var(--ink)] mb-16 text-center">15 Years of Excellence</h2>
+
+        <div ref={tlRef} className="relative">
+          <div className="tl-draw-line h-full">
+            <div className="tl-fill" />
+          </div>
+          {milestones.map((m, i) => {
+            const ref    = useRef(null)
+            const inView = useInView(ref, { once: true })
+            const isLeft = i % 2 === 0
+            return (
+              <div key={m.year} ref={ref} className={`flex items-start gap-0 mb-14 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}>
+                <motion.div
+                  initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.8, ease: [0.16,1,0.3,1] }}
+                  className={`flex-1 ${isLeft ? 'pr-12 text-right' : 'pl-12 text-left'}`}
+                >
+                  <p className="font-display text-[2rem] text-[var(--terra)] leading-none mb-1">{m.year}</p>
+                  <p className="font-medium text-[var(--ink)] mb-1 text-[14px]">{m.title}</p>
+                  <p className="text-[13px] text-[var(--ink-mute)] leading-relaxed">{m.desc}</p>
+                </motion.div>
+                <div className="flex flex-col items-center relative z-10">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={inView ? { scale: 1 } : {}}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="w-3.5 h-3.5 bg-[var(--terra)] rounded-full border-2 border-[var(--linen)]"
+                  />
+                </div>
+                <div className="flex-1" />
+              </div>
+            )
+          })}
+        </div>
+      </section>
+    </main>
+  )
+}
+EOF
+echo "about done"
+
+bash
+
+cat > /home/claude/patils-real-estate/app/contact/page.tsx << 'EOF'
+'use client'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MapPin, Phone, Mail, Clock, Instagram, Linkedin, Youtube, CheckCircle } from 'lucide-react'
+
+const cities = ['Mumbai','Pune','Nashik','Thane','Navi Mumbai','Other']
+const interests = ['1 BHK Apartment','2 BHK Apartment','3 BHK Apartment','4+ BHK Apartment','Villa','Plot','Commercial','Just Exploring']
+
+export default function ContactPage() {
+  const [form, setForm] = useState({ name:'', phone:'', email:'', city:'', message:'', interest:'' })
+  const [done, setDone] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setLoading(true)
+    await new Promise(r => setTimeout(r, 1800))
+    setLoading(false); setDone(true)
+  }
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) =>
+    setForm(f => ({...f,[k]:e.target.value}))
+
+  return (
+    <main className="min-h-screen bg-[var(--linen)] pt-[72px]">
+      {/* Header */}
+      <div className="border-b border-[var(--rule)] px-8 md:px-12 py-16 max-w-[1440px] mx-auto">
+        <p className="text-[10px] tracking-[0.45em] uppercase text-[var(--terra)] mb-3">Reach Out</p>
+        <h1 className="font-display text-[clamp(2.5rem,5.5vw,4.5rem)] font-normal text-[var(--ink)]">Let&apos;s Talk</h1>
+        <p className="text-[var(--dust)] mt-2.5 text-[14px]">We respond within 2 hours. Always.</p>
+      </div>
+
+      <div className="max-w-[1440px] mx-auto px-8 md:px-12 py-16 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-16">
+        {/* Form */}
+        <div>
+          <AnimatePresence mode="wait">
+            {done ? (
+              <motion.div
+                key="ok"
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center py-28 text-center"
+              >
+                <motion.div
+                  initial={{ scale: 0, rotate: -10 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 180, delay: 0.1 }}
+                >
+                  <CheckCircle size={56} className="text-[var(--terra)] mb-6" />
+                </motion.div>
+                <h2 className="font-display text-3xl font-normal text-[var(--ink)] mb-3">Message Received</h2>
+                <p className="text-[var(--dust)] text-[14px]">We&apos;ll call you within 2 hours.</p>
+                <button onClick={() => setDone(false)} className="mt-8 text-[10px] tracking-[0.25em] uppercase text-[var(--terra)] hover:opacity-60 transition-opacity">
+                  Send Another
+                </button>
+              </motion.div>
+            ) : (
+              <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={submit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="fl"><input type="text" placeholder=" " value={form.name} onChange={set('name')} required /><label>Full Name *</label></div>
+                  <div className="fl"><input type="tel" placeholder=" " value={form.phone} onChange={set('phone')} required /><label>Phone Number *</label></div>
+                </div>
+                <div className="fl"><input type="email" placeholder=" " value={form.email} onChange={set('email')} /><label>Email Address</label></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="fl">
+                    <select value={form.city} onChange={set('city')}>
+                      <option value="" disabled>Select City</option>
+                      {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <label>Your City</label>
+                  </div>
+                  <div className="fl">
+                    <select value={form.interest} onChange={set('interest')}>
+                      <option value="" disabled>Select Interest</option>
+                      {interests.map(i => <option key={i} value={i}>{i}</option>)}
+                    </select>
+                    <label>Property Interest</label>
+                  </div>
+                </div>
+                <div className="fl"><textarea placeholder=" " rows={4} value={form.message} onChange={set('message')} style={{ resize:'none' }} /><label>Your Message</label></div>
+                <button
+                  type="submit" disabled={loading}
+                  className="flex items-center gap-3 px-12 py-4 bg-[var(--terra)] text-white text-[10px] font-medium tracking-[0.25em] uppercase hover:bg-[var(--terra-dk)] transition-colors"
+                >
+                  {loading ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Send Enquiry →'}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Info */}
+        <div className="space-y-10">
+          <div className="bg-[var(--white)] border border-[var(--rule)] p-8">
+            <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--terra)] mb-6 font-medium">Head Office</p>
+            <ul className="space-y-5">
+              <li className="flex gap-4">
+                <MapPin size={16} className="text-[var(--terra)] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[13px] font-medium text-[var(--ink)] mb-0.5">Mumbai HQ</p>
+                  <p className="text-[12px] text-[var(--ink-mute)] leading-relaxed">401 Patil Tower, Bandra Kurla Complex,<br/>Mumbai, Maharashtra 400051</p>
+                </div>
+              </li>
+              <li className="flex gap-4">
+                <Phone size={16} className="text-[var(--terra)] shrink-0" />
+                <div>
+                  <p className="text-[13px] font-medium text-[var(--ink)] mb-0.5">Phone</p>
+                  <p className="text-[12px] text-[var(--ink-mute)]">+91 98765 43210 · Mumbai</p>
+                  <p className="text-[12px] text-[var(--ink-mute)]">+91 91234 56789 · Pune</p>
+                </div>
+              </li>
+              <li className="flex gap-4">
+                <Mail size={16} className="text-[var(--terra)] shrink-0" />
+                <div>
+                  <p className="text-[13px] font-medium text-[var(--ink)] mb-0.5">Email</p>
+                  <p className="text-[12px] text-[var(--ink-mute)]">hello@patilrealestate.com</p>
+                </div>
+              </li>
+              <li className="flex gap-4">
+                <Clock size={16} className="text-[var(--terra)] shrink-0" />
+                <div>
+                  <p className="text-[13px] font-medium text-[var(--ink)] mb-0.5">Hours</p>
+                  <p className="text-[12px] text-[var(--ink-mute)]">Mon – Sat: 9:00 AM – 7:00 PM</p>
+                  <p className="text-[12px] text-[var(--ink-mute)]">Sunday: 11:00 AM – 4:00 PM</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--terra)] mb-4 font-medium">Follow Us</p>
+            <div className="flex gap-3">
+              {[['Instagram', Instagram],['LinkedIn', Linkedin],['YouTube', Youtube]].map(([label, Icon]) => (
+                <a key={label as string} href="#" aria-label={label as string}
+                  className="flex items-center gap-2 border border-[var(--rule-heavy)] px-4 py-2.5 text-[var(--ink-mute)] hover:border-[var(--terra)] hover:text-[var(--terra)] transition-all duration-300">
+                  <(Icon as React.ElementType) size={14} />
+                  <span className="text-[11px] tracking-wider">{label as string}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Map */}
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.0!2d72.8347!3d19.0596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDAzJzM0LjYiTiA3MsKwNTAnMDUuMCJF!5e0!3m2!1sen!2sin!4v1"
+        width="100%" height="400"
+        style={{ border: 0, display: 'block', borderTop: '1px solid var(--rule)' }}
+        allowFullScreen loading="lazy" title="Office"
+      />
+    </main>
+  )
+}
+EOF
+echo "contact done"
+Output
+
+contact done
+
+
+cat > /home/claude/patils-real-estate/app/calculator/page.tsx << 'EOF'
+'use client'
+import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { ChevronDown, ChevronUp } from 'lucide-react'
+
+const fmt = (n: number) => {
+  if (n >= 10000000) return `₹${(n/10000000).toFixed(2)} Cr`
+  if (n >= 100000)   return `₹${(n/100000).toFixed(2)} L`
+  return `₹${Math.round(n).toLocaleString('en-IN')}`
+}
+
+export default function CalculatorPage() {
+  const [loan, setLoan]     = useState(5000000)
+  const [rate, setRate]     = useState(8.5)
+  const [tenure, setTenure] = useState(20)
+  const [all, setAll]       = useState(false)
+
+  const { emi, interest, total, amort } = useMemo(() => {
+    const r = rate / 12 / 100
+    const n = tenure * 12
+    const emi = r === 0 ? loan/n : (loan*r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1)
+    const total = emi * n
+    const interest = total - loan
+    const amort: { year:number; principal:number; interest:number; balance:number }[] = []
+    let bal = loan
+    for (let y = 1; y <= tenure; y++) {
+      let yp=0, yi=0
+      for (let m=0; m<12; m++) {
+        const mi = bal*r; const mp = Math.min(emi-mi, bal)
+        yi+=mi; yp+=mp; bal-=mp
+        if (bal<=0){ bal=0; break }
+      }
+      amort.push({ year:y, principal:yp, interest:yi, balance:Math.max(bal,0) })
+      if (bal<=0) break
+    }
+    return { emi, interest, total, amort }
+  }, [loan, rate, tenure])
+
+  const pie = [
+    { name:'Principal', value: Math.round(loan),     color:'var(--terra)' },
+    { name:'Interest',  value: Math.round(interest), color:'var(--parchment)' },
+  ]
+
+  return (
+    <main className="min-h-screen bg-[var(--linen)] pt-[72px]">
+      <div className="border-b border-[var(--rule)] px-8 md:px-12 py-16 max-w-[1440px] mx-auto">
+        <p className="text-[10px] tracking-[0.45em] uppercase text-[var(--terra)] mb-3">Finance</p>
+        <h1 className="font-display text-[clamp(2.5rem,5.5vw,4.5rem)] font-normal text-[var(--ink)]">EMI Calculator</h1>
+        <p className="text-[var(--dust)] mt-2.5 text-[14px]">Plan your home purchase with complete clarity.</p>
+      </div>
+
+      <div className="max-w-[1440px] mx-auto px-8 md:px-12 py-14 grid grid-cols-1 lg:grid-cols-2 gap-14">
+        {/* Sliders */}
+        <div className="space-y-12">
+          {/* Loan Amount */}
+          <div>
+            <div className="flex justify-between items-baseline mb-5">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--dust)]">Loan Amount</p>
+              <p className="font-display text-[1.6rem] text-[var(--terra)]">{fmt(loan)}</p>
+            </div>
+            <input type="range" min={1000000} max={200000000} step={500000} value={loan} onChange={e => setLoan(+e.target.value)} />
+            <div className="flex justify-between mt-2 text-[11px] text-[var(--dust)]"><span>₹10L</span><span>₹20Cr</span></div>
+          </div>
+
+          {/* Rate */}
+          <div>
+            <div className="flex justify-between items-baseline mb-5">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--dust)]">Interest Rate</p>
+              <p className="font-display text-[1.6rem] text-[var(--terra)]">{rate.toFixed(1)}%</p>
+            </div>
+            <input type="range" min={6.5} max={14} step={0.1} value={rate} onChange={e => setRate(+e.target.value)} />
+            <div className="flex justify-between mt-2 text-[11px] text-[var(--dust)]"><span>6.5%</span><span>14%</span></div>
+          </div>
+
+          {/* Tenure */}
+          <div>
+            <div className="flex justify-between items-baseline mb-5">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--dust)]">Loan Tenure</p>
+              <p className="font-display text-[1.6rem] text-[var(--terra)]">{tenure} Years</p>
+            </div>
+            <input type="range" min={1} max={30} step={1} value={tenure} onChange={e => setTenure(+e.target.value)} />
+            <div className="flex justify-between mt-2 text-[11px] text-[var(--dust)]"><span>1 yr</span><span>30 yrs</span></div>
+          </div>
+
+          {/* Result cards */}
+          <div className="space-y-3">
+            <motion.div
+              key={Math.round(emi)}
+              initial={{ scale: 0.98 }}
+              animate={{ scale: 1 }}
+              className="bg-[var(--terra)] p-7"
+            >
+              <p className="text-[9px] tracking-[0.35em] uppercase text-white/70 mb-2">Monthly EMI</p>
+              <p className="font-display text-[2.5rem] text-white font-medium">{fmt(emi)}</p>
+            </motion.div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-[var(--white)] border border-[var(--rule)] p-5">
+                <p className="text-[9px] tracking-[0.3em] uppercase text-[var(--dust)] mb-2">Total Interest</p>
+                <p className="font-display text-[1.3rem] text-[var(--ink)]">{fmt(interest)}</p>
+              </div>
+              <div className="bg-[var(--white)] border border-[var(--rule)] p-5">
+                <p className="text-[9px] tracking-[0.3em] uppercase text-[var(--dust)] mb-2">Total Payable</p>
+                <p className="font-display text-[1.3rem] text-[var(--ink)]">{fmt(total)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart + Table */}
+        <div className="space-y-8">
+          {/* Pie */}
+          <div className="bg-[var(--white)] border border-[var(--rule)] p-7">
+            <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--dust)] mb-6">Principal vs Interest</p>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={pie} cx="50%" cy="50%" innerRadius={50} outerRadius={78} paddingAngle={2} dataKey="value">
+                    {pie.map((e,i) => <Cell key={i} fill={e.color === 'var(--terra)' ? '#8C6E52' : '#E0D9CE'} stroke="transparent" />)}
+                  </Pie>
+                  <Tooltip formatter={(v:number) => fmt(v)} contentStyle={{ background:'#FDFCFB', border:'1px solid var(--rule)', borderRadius:0, fontSize:12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-8 mt-2">
+              {pie.map(d => (
+                <div key={d.name} className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: d.name==='Principal' ? '#8C6E52' : '#E0D9CE' }} />
+                  <span className="text-[11px] text-[var(--dust)]">{d.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-[var(--white)] border border-[var(--rule)]">
+            <div className="px-6 py-4 border-b border-[var(--rule)]">
+              <p className="text-[9px] tracking-[0.35em] uppercase text-[var(--dust)]">Amortization Schedule</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[12px]">
+                <thead>
+                  <tr className="border-b border-[var(--rule)] bg-[var(--cream)]">
+                    {['Year','Principal','Interest','Balance'].map(h => (
+                      <th key={h} className="px-5 py-3 text-left text-[9px] tracking-[0.25em] uppercase text-[var(--terra)] font-medium">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(all ? amort : amort.slice(0,5)).map(row => (
+                    <tr key={row.year} className="border-b border-[var(--rule)] hover:bg-[var(--linen)] transition-colors">
+                      <td className="px-5 py-3 text-[var(--ink)] font-medium">{row.year}</td>
+                      <td className="px-5 py-3 text-[var(--ink-mute)]">{fmt(row.principal)}</td>
+                      <td className="px-5 py-3 text-[var(--ink-mute)]">{fmt(row.interest)}</td>
+                      <td className="px-5 py-3 text-[var(--ink-mute)]">{fmt(row.balance)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {amort.length > 5 && (
+              <button
+                onClick={() => setAll(a => !a)}
+                className="w-full py-3.5 text-[10px] tracking-[0.2em] uppercase text-[var(--terra)] hover:bg-[var(--linen)] transition-colors flex items-center justify-center gap-2 border-t border-[var(--rule)]"
+              >
+                {all ? <><ChevronUp size={12}/> Show Less</> : <><ChevronDown size={12}/> View All {amort.length} Years</>}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}
+EOF
+echo "calc done"

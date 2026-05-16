@@ -1,0 +1,2410 @@
+globle css
+ @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --charcoal: #0D0D0D;
+  --ivory: #F5F0E8;
+  --gold: #C9A96E;
+  --gold-light: #E8D5A3;
+  --gold-dark: #8A6D3B;
+  --warm-white: #FAF8F4;
+  --muted: #6B6460;
+  --border: rgba(201, 169, 110, 0.2);
+  --glass: rgba(13, 13, 13, 0.6);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+
+body {
+  background-color: var(--charcoal);
+  color: var(--ivory);
+  font-family: 'DM Sans', sans-serif;
+  cursor: none;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body * { cursor: none !important; }
+
+.font-display { font-family: 'Cormorant Garamond', serif; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.gold-progress-bar {
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light), var(--gold), var(--gold-dark));
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  outline: none;
+  border-radius: 1px;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: none;
+  border: 2px solid var(--charcoal);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+.float-label-wrap { position: relative; }
+.float-label-wrap input,
+.float-label-wrap textarea,
+.float-label-wrap select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--ivory);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  padding: 1.25rem 0 0.5rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.float-label-wrap input:focus,
+.float-label-wrap textarea:focus { border-bottom-color: var(--gold); }
+.float-label-wrap label {
+  position: absolute;
+  top: 1.25rem;
+  left: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+.float-label-wrap input:focus ~ label,
+.float-label-wrap input:not(:placeholder-shown) ~ label,
+.float-label-wrap textarea:focus ~ label,
+.float-label-wrap textarea:not(:placeholder-shown) ~ label {
+  top: 0;
+  font-size: 0.72rem;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+}
+
+.diagonal-texture {
+  background-image: repeating-linear-gradient(
+    -45deg, transparent, transparent 4px,
+    rgba(201,169,110,0.03) 4px, rgba(201,169,110,0.03) 5px
+  );
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animated-gradient-bg {
+  background: linear-gradient(135deg,#0D0D0D,#1a1008,#0D0D0D,#130e04);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--charcoal); }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+@keyframes awardScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.award-track { display: flex; animation: awardScroll 20s linear infinite; }
+
+
+landing page 
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowRight, Star, ChevronDown } from 'lucide-react'
+
+gsap.registerPlugin(ScrollTrigger)
+
+// ─── Scroll Sequence ────────────────────────────────────────────────────────
+function ScrollSequence() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const framesRef = useRef<HTMLImageElement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [progress, setProgress] = useState(0)
+  const [showText, setShowText] = useState(false)
+  const currentFrameRef = useRef(0)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    // Preload all 471 frames
+    const totalFrames = 471
+    const frames: HTMLImageElement[] = []
+    let loaded = 0
+
+    const drawFrame = (index: number) => {
+      const img = framesRef.current[index]
+      if (!img || !img.complete) {
+        // Placeholder gradient animation
+        const t = index / 471
+        const r1 = Math.floor(13 + t * 30), g1 = Math.floor(21 + t * 15), b1 = Math.floor(53 + t * 20)
+        const r2 = Math.floor(44 + t * 40), g2 = Math.floor(26 + t * 20), b2 = Math.floor(14 + t * 10)
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+        grad.addColorStop(0, `rgb(${r1},${g1},${b1})`)
+        grad.addColorStop(1, `rgb(${r2},${g2},${b2})`)
+        ctx.fillStyle = grad
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        return
+      }
+      const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight)
+      const x = (canvas.width - img.naturalWidth * scale) / 2
+      const y = (canvas.height - img.naturalHeight * scale) / 2
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, x, y, img.naturalWidth * scale, img.naturalHeight * scale)
+    }
+
+    for (let i = 1; i <= totalFrames; i++) {
+      const img = new window.Image()
+      img.src = `/frames/frame-${String(i).padStart(3, '0')}.jpg`
+      img.onload = () => {
+        loaded++
+        setProgress(Math.round((loaded / totalFrames) * 100))
+        if (loaded === totalFrames) setLoading(false)
+      }
+      img.onerror = () => {
+        loaded++
+        setProgress(Math.round((loaded / totalFrames) * 100))
+        if (loaded === totalFrames) setLoading(false)
+      }
+      frames.push(img)
+    }
+    framesRef.current = frames
+
+    // Simulate load completion for placeholder mode
+    const timeout = setTimeout(() => setLoading(false), 2000)
+
+    const ctx2 = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: wrapperRef.current,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5,
+        onUpdate: (self) => {
+          const frameIndex = Math.min(Math.floor(self.progress * (totalFrames - 1)), totalFrames - 1)
+          if (frameIndex !== currentFrameRef.current) {
+            currentFrameRef.current = frameIndex
+            drawFrame(frameIndex)
+          }
+          setShowText(self.progress > 0.88)
+        }
+      })
+    })
+
+    // Draw first frame
+    drawFrame(0)
+
+    return () => {
+      window.removeEventListener('resize', resize)
+      clearTimeout(timeout)
+      ctx2.revert()
+    }
+  }, [])
+
+  return (
+    <>
+      {/* Loading Screen */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="fixed inset-0 z-[100] bg-[#0D0D0D] flex flex-col items-center justify-center"
+          >
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="font-cormorant text-[#C9A96E] text-2xl tracking-[0.4em] uppercase mb-12"
+            >
+              Patil's Real Estate
+            </motion.p>
+            <div className="w-64 h-px bg-white/10 relative overflow-hidden">
+              <motion.div
+                className="absolute inset-y-0 left-0 bg-[#C9A96E]"
+                style={{ width: `${progress}%` }}
+                transition={{ duration: 0.1 }}
+              />
+            </div>
+            <p className="font-dm text-[#6B6460] text-sm mt-4">{progress}%</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Scroll wrapper */}
+      <div ref={wrapperRef} style={{ height: '600vh' }} className="relative">
+        <div className="sticky top-0 h-screen w-full overflow-hidden">
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+          {/* Text Overlay */}
+          <AnimatePresence>
+            {showText && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 flex flex-col items-center justify-center"
+                style={{ background: 'rgba(0,0,0,0.45)' }}
+              >
+                <motion.p
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="font-dm text-[#C9A96E] text-sm tracking-[0.35em] uppercase mb-4"
+                >
+                  Welcome To
+                </motion.p>
+                <div className="overflow-hidden mb-4">
+                  <motion.h1
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    transition={{ delay: 0.25, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-cormorant text-[#F5F0E8] text-[7vw] leading-none text-center"
+                  >
+                    Patil's Real Estate
+                  </motion.h1>
+                </div>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="font-dm text-[#F5F0E8]/70 text-lg mb-10 text-center"
+                >
+                  Mumbai's Most Trusted Luxury Properties
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <Link
+                    href="/properties"
+                    className="group inline-flex items-center gap-3 border border-[#C9A96E] text-[#C9A96E] px-8 py-3 font-dm text-sm tracking-widest uppercase hover:bg-[#C9A96E] hover:text-[#0D0D0D] transition-all duration-300"
+                  >
+                    Explore Properties
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Scroll indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          >
+            <span className="font-dm text-white/40 text-xs tracking-widest uppercase">Scroll</span>
+            <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+              <ChevronDown className="w-4 h-4 text-[#C9A96E]" />
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ─── Marquee ────────────────────────────────────────────────────────────────
+function Marquee() {
+  const text = 'LUXURY RESIDENCES  ·  COMMERCIAL SPACES  ·  PREMIUM PLOTS  ·  MUMBAI  ·  PUNE  ·  NASHIK  ·  PATIL\'S REAL ESTATE  ·  '
+  return (
+    <div className="bg-[#0D0D0D] py-5 overflow-hidden border-y border-[#C9A96E]/20">
+      <div className="flex whitespace-nowrap">
+        {[0, 1].map((i) => (
+          <motion.span
+            key={i}
+            animate={{ x: [0, '-50%'] }}
+            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+            className="font-cormorant italic text-[#C9A96E] text-xl tracking-widest flex-shrink-0"
+          >
+            {text}{text}
+          </motion.span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Featured Properties ─────────────────────────────────────────────────────
+const featuredProperties = [
+  { id: '1', name: 'Patil Heights', location: 'Bandra West, Mumbai', price: '₹4.2 Cr', bhk: 3, sqft: 1850, img: 'https://picsum.photos/seed/prop1/800/600' },
+  { id: '2', name: 'The Ivory Residences', location: 'Juhu, Mumbai', price: '₹7.8 Cr', bhk: 4, sqft: 3200, img: 'https://picsum.photos/seed/prop2/800/600' },
+  { id: '4', name: 'Golden Spire', location: 'Worli, Mumbai', price: '₹12 Cr', bhk: 5, sqft: 5000, img: 'https://picsum.photos/seed/prop4/800/600' },
+]
+
+function PropertyCard3D({ prop, index }: { prop: typeof featuredProperties[0]; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [hovered, setHovered] = useState(false)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 12
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -12
+    setTilt({ x, y })
+  }
+
+  return (
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, y: 60 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.15, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setTilt({ x: 0, y: 0 }) }}
+      style={{
+        transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+        transition: hovered ? 'none' : 'transform 0.5s ease',
+      }}
+      className="group relative overflow-hidden cursor-pointer"
+    >
+      <div className="relative h-80 overflow-hidden">
+        <Image
+          src={prop.img}
+          alt={prop.name}
+          fill
+          className={`object-cover transition-transform duration-700 ${hovered ? 'scale-105' : 'scale-100'}`}
+        />
+        <div className={`absolute inset-0 bg-black transition-opacity duration-300 ${hovered ? 'opacity-50' : 'opacity-20'}`} />
+        <AnimatePresence>
+          {hovered && (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Link
+                href={`/properties/${prop.id}`}
+                className="border border-[#C9A96E] text-[#C9A96E] px-6 py-2 font-dm text-sm tracking-widest uppercase hover:bg-[#C9A96E] hover:text-[#0D0D0D] transition-all"
+              >
+                View Property →
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <div className={`p-5 bg-[#0D0D0D] border-b border-x transition-colors duration-300 ${hovered ? 'border-[#C9A96E]/60' : 'border-[#C9A96E]/10'}`}>
+        <h3 className="font-cormorant text-[#F5F0E8] text-xl mb-1">{prop.name}</h3>
+        <p className="font-dm text-[#6B6460] text-sm mb-3">{prop.location}</p>
+        <div className="flex items-center justify-between">
+          <span className="font-cormorant text-[#C9A96E] text-2xl">{prop.price}</span>
+          <div className="flex gap-2">
+            <span className="bg-[#C9A96E]/10 text-[#C9A96E] text-xs px-2 py-1 font-dm">{prop.bhk} BHK</span>
+            <span className="bg-[#C9A96E]/10 text-[#C9A96E] text-xs px-2 py-1 font-dm">{prop.sqft} sqft</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── Stats ───────────────────────────────────────────────────────────────────
+function StatsSection() {
+  const stats = [
+    { value: '500+', label: 'Properties Sold' },
+    { value: '15+', label: 'Years Experience' },
+    { value: '98%', label: 'Client Satisfaction' },
+    { value: '₹2000Cr+', label: 'Worth Transacted' },
+  ]
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ctx = gsap.context(() => {
+      gsap.from('.stat-num', {
+        textContent: 0,
+        duration: 2,
+        ease: 'power2.out',
+        snap: { textContent: 1 },
+        scrollTrigger: { trigger: el, start: 'top 80%', once: true },
+      })
+    }, el)
+    return () => ctx.revert()
+  }, [])
+
+  return (
+    <section ref={ref} className="bg-[#0D0D0D] py-24 px-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+        {stats.map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.1, duration: 0.6 }}
+          >
+            <p className="stat-num font-cormorant text-[#C9A96E] text-6xl md:text-7xl mb-3">{s.value}</p>
+            <p className="font-dm text-[#6B6460] text-sm tracking-widest uppercase">{s.label}</p>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ─── Testimonials ────────────────────────────────────────────────────────────
+const testimonials = [
+  { quote: 'Patil's team found us our dream home in Bandra in under two weeks. Their knowledge of Mumbai's micro-markets is unparalleled.', name: 'Rohan Mehta', location: 'Bandra, Mumbai' },
+  { quote: 'The level of transparency throughout the transaction gave us complete peace of mind. Truly a class apart from other brokers.', name: 'Priya Sharma', location: 'Juhu, Mumbai' },
+  { quote: 'From Nashik to Mumbai, they handled everything seamlessly. The property we got exceeded every expectation.', name: 'Amit Kulkarni', location: 'Nashik' },
+]
+
+function TestimonialsSection() {
+  const [current, setCurrent] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setCurrent((c) => (c + 1) % testimonials.length), 4000)
+    return () => clearInterval(t)
+  }, [])
+
+  return (
+    <section className="bg-[#FAF8F4] py-24 px-6">
+      <div className="max-w-4xl mx-auto text-center">
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="font-cormorant text-[#0D0D0D] text-5xl md:text-6xl mb-16"
+        >
+          What Our Clients Say
+        </motion.h2>
+        <div className="relative min-h-[200px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0"
+            >
+              <div className="flex justify-center mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 text-[#C9A96E] fill-[#C9A96E]" />
+                ))}
+              </div>
+              <blockquote className="font-cormorant italic text-[#0D0D0D] text-2xl md:text-3xl leading-relaxed mb-8">
+                "{testimonials[current].quote}"
+              </blockquote>
+              <p className="font-dm text-[#0D0D0D] font-medium">{testimonials[current].name}</p>
+              <p className="font-dm text-[#6B6460] text-sm">{testimonials[current].location}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <div className="flex justify-center gap-2 mt-4">
+          {testimonials.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`w-2 h-2 rounded-full transition-all ${i === current ? 'bg-[#C9A96E] w-6' : 'bg-[#C9A96E]/30'}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── CTA Banner ──────────────────────────────────────────────────────────────
+function CTABanner() {
+  return (
+    <section className="relative py-28 px-6 overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(135deg, #0D0D0D 0%, #1a1008 50%, #0D0D0D 100%)',
+          animation: 'gradient-shift 8s ease infinite',
+        }}
+      />
+      <div className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(45deg, #C9A96E 0, #C9A96E 1px, transparent 0, transparent 50%)',
+          backgroundSize: '20px 20px',
+        }}
+      />
+      <div className="relative max-w-3xl mx-auto text-center">
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="font-cormorant text-[#F5F0E8] text-5xl md:text-6xl mb-4"
+        >
+          Find Your Dream Home in Mumbai
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.15 }}
+          className="font-dm text-[#F5F0E8]/60 text-lg mb-10"
+        >
+          Talk to our experts. No pressure. Just possibilities.
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <Link
+            href="/properties"
+            className="bg-[#C9A96E] text-[#0D0D0D] px-8 py-3 font-dm text-sm tracking-widest uppercase hover:bg-[#E8D5A3] transition-all"
+          >
+            Browse Properties
+          </Link>
+          <a
+            href="tel:+919876543210"
+            className="border border-[#C9A96E] text-[#C9A96E] px-8 py-3 font-dm text-sm tracking-widest uppercase hover:bg-[#C9A96E] hover:text-[#0D0D0D] transition-all"
+          >
+            Call Us Now
+          </a>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+export default function HomePage() {
+  return (
+    <main>
+      <ScrollSequence />
+      <Marquee />
+
+      {/* Featured Properties */}
+      <section className="bg-[#0D0D0D] py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-14 text-center">
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="font-cormorant text-[#F5F0E8] text-5xl md:text-6xl mb-3"
+            >
+              Featured Properties
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="font-dm text-[#6B6460]"
+            >
+              Handpicked luxury living spaces
+            </motion.p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {featuredProperties.map((p, i) => (
+              <PropertyCard3D key={p.id} prop={p} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <StatsSection />
+      <TestimonialsSection />
+      <CTABanner />
+    </main>
+  )
+}
+
+root layout 
+
+import type { Metadata } from 'next'
+import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
+import './globals.css'
+import Navbar from '@/components/ui/Navbar'
+import Footer from '@/components/ui/Footer'
+import CustomCursor from '@/components/ui/CustomCursor'
+import LenisProvider from '@/components/ui/LenisProvider'
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-cormorant',
+})
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm',
+})
+
+export const metadata: Metadata = {
+  title: "Patil's Real Estate | Mumbai's Premier Luxury Properties",
+  description: "Discover premium residential and commercial properties in Mumbai, Pune, and Nashik with Patil's Real Estate.",
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
+      <body className="bg-[#0D0D0D] text-[#F5F0E8] overflow-x-hidden">
+        <LenisProvider>
+          <CustomCursor />
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </LenisProvider>
+      </body>
+    </html>
+  )
+}
+
+navbar
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Menu, X } from 'lucide-react'
+
+const links = [
+  { href: '/properties', label: 'Properties' },
+  { href: '/about', label: 'About' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/calculator', label: 'Calculator' },
+  { href: '/contact', label: 'Contact' },
+]
+
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+  const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <>
+      <header
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+        style={{
+          background: scrolled ? 'rgba(13,13,13,0.85)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(20px)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(201,169,110,0.15)' : 'none',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex flex-col leading-none">
+            <span className="font-cormorant text-[#C9A96E] text-2xl tracking-widest font-semibold">PATIL'S</span>
+            <span className="font-dm text-[#F5F0E8] text-[10px] tracking-[0.25em] uppercase">Real Estate</span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="relative font-dm text-sm tracking-widest uppercase group"
+                style={{ color: pathname === l.href ? '#C9A96E' : '#F5F0E8' }}
+              >
+                {l.label}
+                <span
+                  className="absolute -bottom-1 left-0 h-px bg-[#C9A96E] transition-all duration-300"
+                  style={{ width: pathname === l.href ? '100%' : '0%' }}
+                />
+                <span className="absolute -bottom-1 left-0 h-px bg-[#C9A96E] w-0 group-hover:w-full transition-all duration-300" />
+              </Link>
+            ))}
+          </nav>
+
+          {/* CTA */}
+          <Link
+            href="/contact"
+            className="hidden md:inline-flex items-center bg-[#C9A96E] text-[#0D0D0D] px-5 py-2 font-dm text-xs tracking-widest uppercase hover:bg-[#E8D5A3] transition-all"
+          >
+            Schedule Visit
+          </Link>
+
+          {/* Hamburger */}
+          <button
+            onClick={() => setOpen(true)}
+            className="md:hidden text-[#F5F0E8] p-1"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile full-screen menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] bg-[#0D0D0D] flex flex-col items-center justify-center"
+          >
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-6 right-6 text-[#F5F0E8]"
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <nav className="flex flex-col items-center gap-8">
+              {links.map((l, i) => (
+                <motion.div
+                  key={l.href}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 30 }}
+                  transition={{ delay: i * 0.08 }}
+                >
+                  <Link
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    className="font-cormorant text-[#F5F0E8] text-5xl hover:text-[#C9A96E] transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                </motion.div>
+              ))}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Link
+                  href="/contact"
+                  onClick={() => setOpen(false)}
+                  className="mt-4 inline-block border border-[#C9A96E] text-[#C9A96E] px-8 py-3 font-dm text-sm tracking-widest uppercase"
+                >
+                  Schedule Visit
+                </Link>
+              </motion.div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
+
+custom cursor
+'use client'
+
+import { useEffect, useState } from 'react'
+import { motion, useSpring, useMotionValue } from 'framer-motion'
+
+export default function CustomCursor() {
+  const [hovered, setHovered] = useState(false)
+  const [label, setLabel] = useState('')
+
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  const springConfig = { stiffness: 150, damping: 20, mass: 0.5 }
+  const ringX = useSpring(mouseX, springConfig)
+  const ringY = useSpring(mouseY, springConfig)
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX)
+      mouseY.set(e.clientY)
+    }
+    const onEnter = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.matches('a,button,[data-cursor]')) {
+        setHovered(true)
+        setLabel(target.dataset.cursor || 'VIEW')
+      }
+    }
+    const onLeave = () => { setHovered(false); setLabel('') }
+
+    window.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseover', onEnter)
+    document.addEventListener('mouseout', onLeave)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseover', onEnter)
+      document.removeEventListener('mouseout', onLeave)
+    }
+  }, [mouseX, mouseY])
+
+  return (
+    <>
+      {/* Dot */}
+      <motion.div
+        style={{ x: mouseX, y: mouseY }}
+        className="fixed top-0 left-0 z-[999] pointer-events-none -translate-x-1/2 -translate-y-1/2"
+      >
+        <motion.div
+          animate={{
+            width: hovered ? 60 : 8,
+            height: hovered ? 60 : 8,
+            backgroundColor: '#C9A96E',
+            opacity: 1,
+          }}
+          transition={{ duration: 0.2 }}
+          className="rounded-full flex items-center justify-center"
+        >
+          {hovered && label && (
+            <span className="font-dm text-[#0D0D0D] text-[9px] tracking-widest uppercase">{label}</span>
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* Ring */}
+      {!hovered && (
+        <motion.div
+          style={{ x: ringX, y: ringY }}
+          className="fixed top-0 left-0 z-[998] pointer-events-none -translate-x-1/2 -translate-y-1/2"
+        >
+          <div className="w-10 h-10 rounded-full border border-[#C9A96E]/40" />
+        </motion.div>
+      )}
+    </>
+  )
+}
+
+lenis 
+'use client'
+
+import { useEffect, createContext, useContext, useRef } from 'react'
+import Lenis from '@studio-freight/lenis'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const LenisContext = createContext<Lenis | null>(null)
+export const useLenis = () => useContext(LenisContext)
+
+export default function LenisProvider({ children }: { children: React.ReactNode }) {
+  const lenisRef = useRef<Lenis | null>(null)
+
+  useEffect(() => {
+    const lenis = new Lenis({ lerp: 0.08, smoothWheel: true })
+    lenisRef.current = lenis
+
+    gsap.ticker.add((time) => lenis.raf(time * 1000))
+    gsap.ticker.lagSmoothing(0)
+
+    lenis.on('scroll', ScrollTrigger.update)
+
+    return () => {
+      lenis.destroy()
+      gsap.ticker.remove((time) => lenis.raf(time * 1000))
+    }
+  }, [])
+
+  return (
+    <LenisContext.Provider value={lenisRef.current}>
+      {children}
+    </LenisContext.Provider>
+  )
+}
+
+export interface Property {
+  id: string
+  name: string
+  location: string
+  price: string
+  bhk: number
+  sqft: number
+  type: 'Apartment' | 'Villa' | 'Plot' | 'Commercial'
+  status: 'Ready to Move' | 'Under Construction' | 'New Launch'
+  image: string
+  floor?: number
+  facing?: string
+  possession?: string
+  description?: string
+}
+
+export const properties: Property[] = [
+  {
+    id: '1',
+    name: 'Patil Heights',
+    location: 'Bandra West, Mumbai',
+    price: '₹4.2 Cr',
+    bhk: 3,
+    sqft: 1850,
+    type: 'Apartment',
+    status: 'Ready to Move',
+    image: 'https://picsum.photos/seed/h1/800/600',
+    floor: 14,
+    facing: 'Sea Facing',
+    possession: 'Immediate',
+    description: 'An iconic residential tower in the heart of Bandra West offering panoramic sea views and world-class amenities. Each apartment is meticulously designed with Italian marble flooring, modular kitchens, and floor-to-ceiling windows.',
+  },
+  {
+    id: '2',
+    name: 'The Ivory Residences',
+    location: 'Juhu, Mumbai',
+    price: '₹7.8 Cr',
+    bhk: 4,
+    sqft: 3200,
+    type: 'Apartment',
+    status: 'New Launch',
+    image: 'https://picsum.photos/seed/h2/800/600',
+    floor: 22,
+    facing: 'Garden Facing',
+    possession: 'Dec 2025',
+    description: 'Nestled in the prestigious Juhu enclave, The Ivory Residences redefines luxury living with its art-deco inspired architecture and lush landscaped gardens.',
+  },
+  {
+    id: '3',
+    name: 'Patil Greens Villa',
+    location: 'Pune',
+    price: '₹2.9 Cr',
+    bhk: 4,
+    sqft: 2800,
+    type: 'Villa',
+    status: 'Ready to Move',
+    image: 'https://picsum.photos/seed/h3/800/600',
+    floor: 2,
+    facing: 'East Facing',
+    possession: 'Immediate',
+    description: 'A private villa community set amidst 5 acres of verdant greenery in the serene outskirts of Pune. Each villa comes with a private garden, swimming pool access, and premium club facilities.',
+  },
+  {
+    id: '4',
+    name: 'Golden Spire',
+    location: 'Worli, Mumbai',
+    price: '₹12 Cr',
+    bhk: 5,
+    sqft: 5000,
+    type: 'Apartment',
+    status: 'Under Construction',
+    image: 'https://picsum.photos/seed/h4/800/600',
+    floor: 35,
+    facing: 'Sea Facing',
+    possession: 'Mar 2026',
+    description: 'The crown jewel of Worli's skyline. Golden Spire offers ultra-luxury penthouses with 270-degree sea views, private terraces, and butler service.',
+  },
+  {
+    id: '5',
+    name: 'Nashik Meadows',
+    location: 'Nashik',
+    price: '₹85 L',
+    bhk: 2,
+    sqft: 1100,
+    type: 'Apartment',
+    status: 'Ready to Move',
+    image: 'https://picsum.photos/seed/h5/800/600',
+    floor: 6,
+    facing: 'North Facing',
+    possession: 'Immediate',
+    description: 'Affordable luxury in the wine capital of India. Nashik Meadows offers thoughtfully designed 2 BHK apartments with modern amenities and excellent connectivity.',
+  },
+  {
+    id: '6',
+    name: 'Patil Commercial Hub',
+    location: 'BKC, Mumbai',
+    price: '₹18 Cr',
+    bhk: 0,
+    sqft: 6000,
+    type: 'Commercial',
+    status: 'Ready to Move',
+    image: 'https://picsum.photos/seed/h6/800/600',
+    floor: 18,
+    facing: 'City View',
+    possession: 'Immediate',
+    description: 'Premium Grade A office space in the financial capital of Mumbai — Bandra Kurla Complex. LEED Gold certified building with 100% power backup and dedicated parking.',
+  },
+  {
+    id: '7',
+    name: 'Serenity Plots',
+    location: 'Thane',
+    price: '₹1.2 Cr',
+    bhk: 0,
+    sqft: 2400,
+    type: 'Plot',
+    status: 'New Launch',
+    image: 'https://picsum.photos/seed/h7/800/600',
+    possession: 'Immediate',
+    description: 'Gated community plots in the rapidly developing Thane corridor. RERA approved with all utilities in place. Build your dream home on your terms.',
+  },
+  {
+    id: '8',
+    name: 'Majestic Tower',
+    location: 'Lower Parel, Mumbai',
+    price: '₹9.5 Cr',
+    bhk: 4,
+    sqft: 4100,
+    type: 'Apartment',
+    status: 'Under Construction',
+    image: 'https://picsum.photos/seed/h8/800/600',
+    floor: 42,
+    facing: 'City Skyline',
+    possession: 'Jun 2026',
+    description: 'Rising 50 floors above Lower Parel\'s iconic skyline, Majestic Tower is the address that defines success. With sky lounges, infinity pools, and concierge services, it redefines Mumbai living.',
+  },
+]
+
+'use client'
+
+import { useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+import { MapPin, Heart, SlidersHorizontal, LayoutGrid, List, ChevronDown, X } from 'lucide-react'
+import { properties } from '@/data/properties'
+import type { Property } from '@/data/properties'
+import type { Metadata } from 'next'
+
+// ─── Property Card ───────────────────────────────────────────────────────────
+function PropertyCard({ prop, index, view }: { prop: Property; index: number; view: 'grid' | 'list' }) {
+  const [wished, setWished] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10
+    setTilt({ x, y })
+  }
+
+  const statusColor = {
+    'Ready to Move': 'bg-emerald-900/60 text-emerald-300',
+    'New Launch': 'bg-[#C9A96E]/20 text-[#C9A96E]',
+    'Under Construction': 'bg-blue-900/60 text-blue-300',
+  }[prop.status]
+
+  if (view === 'list') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.05 }}
+        className="flex gap-5 bg-[#111] border border-[#C9A96E]/10 hover:border-[#C9A96E]/40 transition-all p-4"
+      >
+        <div className="relative w-48 h-32 flex-shrink-0 overflow-hidden">
+          <Image src={prop.image} alt={prop.name} fill className="object-cover" />
+          <span className={`absolute top-2 left-2 text-[10px] px-2 py-0.5 font-dm uppercase tracking-wider ${statusColor}`}>
+            {prop.status}
+          </span>
+        </div>
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <h3 className="font-cormorant text-[#F5F0E8] text-xl mb-1">{prop.name}</h3>
+            <div className="flex items-center gap-1 text-[#6B6460] font-dm text-xs mb-3">
+              <MapPin className="w-3 h-3" /> {prop.location}
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-cormorant text-[#C9A96E] text-2xl">{prop.price}</span>
+            <div className="flex gap-2">
+              {prop.bhk > 0 && <span className="text-[#C9A96E] border border-[#C9A96E]/30 text-xs px-2 py-1 font-dm">{prop.bhk} BHK</span>}
+              <span className="text-[#C9A96E] border border-[#C9A96E]/30 text-xs px-2 py-1 font-dm">{prop.sqft} sqft</span>
+              <Link href={`/properties/${prop.id}`} className="bg-[#C9A96E] text-[#0D0D0D] text-xs px-3 py-1 font-dm hover:bg-[#E8D5A3] transition-all">
+                View →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.07, duration: 0.5 }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setTilt({ x: 0, y: 0 }) }}
+      style={{
+        transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+        transition: hovered ? 'transform 0.1s' : 'transform 0.5s ease',
+      }}
+      className={`group relative overflow-hidden border transition-colors duration-300 ${hovered ? 'border-[#C9A96E]/60' : 'border-[#C9A96E]/10'}`}
+    >
+      {/* Image */}
+      <div className="relative h-56 overflow-hidden">
+        <Image
+          src={prop.image}
+          alt={prop.name}
+          fill
+          className={`object-cover transition-transform duration-700 ${hovered ? 'scale-105' : 'scale-100'}`}
+        />
+        <div className={`absolute inset-0 bg-black transition-opacity duration-300 ${hovered ? 'opacity-40' : 'opacity-10'}`} />
+        
+        {/* Status badge */}
+        <span className={`absolute top-3 left-3 text-[10px] px-2 py-1 font-dm uppercase tracking-wider ${statusColor}`}>
+          {prop.status}
+        </span>
+
+        {/* Wishlist */}
+        <button
+          onClick={() => setWished((w) => !w)}
+          className="absolute top-3 right-3 w-8 h-8 bg-black/50 flex items-center justify-center backdrop-blur-sm"
+        >
+          <motion.div animate={{ scale: wished ? [1, 1.4, 1] : 1 }} transition={{ duration: 0.3 }}>
+            <Heart className={`w-4 h-4 ${wished ? 'fill-[#C9A96E] text-[#C9A96E]' : 'text-white'}`} />
+          </motion.div>
+        </button>
+
+        {/* Hover overlay */}
+        <AnimatePresence>
+          {hovered && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Link
+                href={`/properties/${prop.id}`}
+                className="border border-[#C9A96E] text-[#C9A96E] text-xs px-5 py-2 font-dm uppercase tracking-widest hover:bg-[#C9A96E] hover:text-[#0D0D0D] transition-all"
+              >
+                View Details →
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Info */}
+      <div className="p-4 bg-[#111]">
+        <h3 className="font-cormorant text-[#F5F0E8] text-xl mb-1">{prop.name}</h3>
+        <div className="flex items-center gap-1 text-[#6B6460] font-dm text-xs mb-4">
+          <MapPin className="w-3 h-3" /> {prop.location}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="font-cormorant text-[#C9A96E] text-2xl">{prop.price}</span>
+          <div className="flex gap-2">
+            {prop.bhk > 0 && (
+              <span className="bg-[#C9A96E]/10 text-[#C9A96E] text-[10px] px-2 py-1 font-dm">{prop.bhk} BHK</span>
+            )}
+            <span className="bg-[#C9A96E]/10 text-[#C9A96E] text-[10px] px-2 py-1 font-dm">{prop.sqft} sqft</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── Filter Sidebar ──────────────────────────────────────────────────────────
+interface Filters {
+  types: string[]
+  bhk: number[]
+  locations: string[]
+  statuses: string[]
+  budget: [number, number]
+}
+
+function FilterSidebar({ filters, setFilters, onReset }: {
+  filters: Filters
+  setFilters: (f: Filters) => void
+  onReset: () => void
+}) {
+  const toggle = (key: 'types' | 'locations' | 'statuses', val: string) => {
+    const arr = filters[key] as string[]
+    setFilters({
+      ...filters,
+      [key]: arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val],
+    })
+  }
+  const toggleBhk = (val: number) => {
+    setFilters({
+      ...filters,
+      bhk: filters.bhk.includes(val) ? filters.bhk.filter((x) => x !== val) : [...filters.bhk, val],
+    })
+  }
+
+  const formatBudget = (val: number) => {
+    if (val >= 100) return `₹${val / 100} Cr`
+    return `₹${val} L`
+  }
+
+  return (
+    <aside className="w-full lg:w-72 flex-shrink-0">
+      <div className="sticky top-24 bg-[#111] border border-[#C9A96E]/10 p-6 space-y-8">
+        <div className="flex items-center justify-between">
+          <h3 className="font-cormorant text-[#F5F0E8] text-xl flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-[#C9A96E]" /> Filters
+          </h3>
+          <button onClick={onReset} className="font-dm text-[#6B6460] text-xs hover:text-[#C9A96E] transition-colors uppercase tracking-wider">
+            Reset
+          </button>
+        </div>
+
+        {/* Type */}
+        <div>
+          <p className="font-dm text-[#6B6460] text-xs uppercase tracking-widest mb-3">Property Type</p>
+          <div className="space-y-2">
+            {['Apartment', 'Villa', 'Plot', 'Commercial'].map((t) => (
+              <label key={t} className="flex items-center gap-3 font-dm text-sm text-[#F5F0E8]/70 cursor-none group">
+                <span
+                  onClick={() => toggle('types', t)}
+                  className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-all cursor-none ${
+                    filters.types.includes(t) ? 'bg-[#C9A96E] border-[#C9A96E]' : 'border-[#C9A96E]/30'
+                  }`}
+                >
+                  {filters.types.includes(t) && <span className="text-[#0D0D0D] text-xs">✓</span>}
+                </span>
+                <span onClick={() => toggle('types', t)} className="group-hover:text-[#F5F0E8] transition-colors">{t}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Budget */}
+        <div>
+          <p className="font-dm text-[#6B6460] text-xs uppercase tracking-widest mb-3">Budget</p>
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between font-dm text-xs text-[#6B6460] mb-1">
+                <span>Min: {formatBudget(filters.budget[0])}</span>
+                <span>Max: {formatBudget(filters.budget[1])}</span>
+              </div>
+              <input
+                type="range" min={50} max={2000} step={50}
+                value={filters.budget[0]}
+                onChange={(e) => setFilters({ ...filters, budget: [+e.target.value, filters.budget[1]] })}
+              />
+              <input
+                type="range" min={50} max={2000} step={50}
+                value={filters.budget[1]}
+                onChange={(e) => setFilters({ ...filters, budget: [filters.budget[0], +e.target.value] })}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BHK */}
+        <div>
+          <p className="font-dm text-[#6B6460] text-xs uppercase tracking-widest mb-3">BHK</p>
+          <div className="flex flex-wrap gap-2">
+            {[1, 2, 3, 4].map((b) => (
+              <button
+                key={b}
+                onClick={() => toggleBhk(b)}
+                className={`w-10 h-10 font-dm text-sm transition-all ${
+                  filters.bhk.includes(b)
+                    ? 'bg-[#C9A96E] text-[#0D0D0D]'
+                    : 'border border-[#C9A96E]/30 text-[#6B6460] hover:border-[#C9A96E] hover:text-[#C9A96E]'
+                }`}
+              >
+                {b}{b === 4 ? '+' : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Location */}
+        <div>
+          <p className="font-dm text-[#6B6460] text-xs uppercase tracking-widest mb-3">Location</p>
+          <div className="space-y-2">
+            {['Mumbai', 'Pune', 'Nashik', 'Thane'].map((l) => (
+              <label key={l} className="flex items-center gap-3 font-dm text-sm text-[#F5F0E8]/70 cursor-none">
+                <span
+                  onClick={() => toggle('locations', l)}
+                  className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-all cursor-none ${
+                    filters.locations.includes(l) ? 'bg-[#C9A96E] border-[#C9A96E]' : 'border-[#C9A96E]/30'
+                  }`}
+                >
+                  {filters.locations.includes(l) && <span className="text-[#0D0D0D] text-xs">✓</span>}
+                </span>
+                <span onClick={() => toggle('locations', l)}>{l}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Status */}
+        <div>
+          <p className="font-dm text-[#6B6460] text-xs uppercase tracking-widest mb-3">Status</p>
+          <div className="space-y-2">
+            {['Ready to Move', 'Under Construction', 'New Launch'].map((s) => (
+              <label key={s} className="flex items-center gap-3 font-dm text-sm text-[#F5F0E8]/70 cursor-none">
+                <span
+                  onClick={() => toggle('statuses', s)}
+                  className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-all cursor-none ${
+                    filters.statuses.includes(s) ? 'bg-[#C9A96E] border-[#C9A96E]' : 'border-[#C9A96E]/30'
+                  }`}
+                >
+                  {filters.statuses.includes(s) && <span className="text-[#0D0D0D] text-xs">✓</span>}
+                </span>
+                <span onClick={() => toggle('statuses', s)}>{s}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+const defaultFilters: Filters = {
+  types: [],
+  bhk: [],
+  locations: [],
+  statuses: [],
+  budget: [50, 2000],
+}
+
+export default function PropertiesPage() {
+  const [filters, setFilters] = useState<Filters>(defaultFilters)
+  const [sort, setSort] = useState('default')
+  const [view, setView] = useState<'grid' | 'list'>('grid')
+
+  const filtered = useMemo(() => {
+    let list = [...properties]
+    if (filters.types.length) list = list.filter((p) => filters.types.includes(p.type))
+    if (filters.bhk.length) list = list.filter((p) => filters.bhk.some((b) => b === 4 ? p.bhk >= 4 : p.bhk === b))
+    if (filters.locations.length) list = list.filter((p) => filters.locations.some((l) => p.location.includes(l)))
+    if (filters.statuses.length) list = list.filter((p) => filters.statuses.includes(p.status))
+    return list
+  }, [filters])
+
+  return (
+    <div className="min-h-screen bg-[#0D0D0D] pt-24">
+      {/* Page header */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+          <p className="font-dm text-[#C9A96E] text-xs tracking-[0.3em] uppercase mb-3">Discover</p>
+          <h1 className="font-cormorant text-[#F5F0E8] text-5xl md:text-6xl mb-2">All Properties</h1>
+          <p className="font-dm text-[#6B6460]">Curated luxury spaces across Maharashtra</p>
+        </motion.div>
+      </div>
+
+      {/* Main layout */}
+      <div className="max-w-7xl mx-auto px-6 pb-24 flex flex-col lg:flex-row gap-8">
+        <FilterSidebar filters={filters} setFilters={setFilters} onReset={() => setFilters(defaultFilters)} />
+
+        <div className="flex-1">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#C9A96E]/10">
+            <p className="font-dm text-[#6B6460] text-sm">
+              <span className="text-[#F5F0E8] font-medium">{filtered.length}</span> properties found
+            </p>
+            <div className="flex items-center gap-4">
+              {/* Sort */}
+              <div className="relative">
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="bg-[#111] border border-[#C9A96E]/20 text-[#6B6460] font-dm text-xs px-4 py-2 appearance-none pr-8 focus:outline-none focus:border-[#C9A96E]"
+                >
+                  <option value="default">Sort By</option>
+                  <option value="price-asc">Price ↑</option>
+                  <option value="price-desc">Price ↓</option>
+                  <option value="newest">Newest</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#6B6460] pointer-events-none" />
+              </div>
+
+              {/* View toggle */}
+              <div className="flex border border-[#C9A96E]/20">
+                <button
+                  onClick={() => setView('grid')}
+                  className={`p-2 transition-colors ${view === 'grid' ? 'bg-[#C9A96E] text-[#0D0D0D]' : 'text-[#6B6460]'}`}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setView('list')}
+                  className={`p-2 transition-colors ${view === 'list' ? 'bg-[#C9A96E] text-[#0D0D0D]' : 'text-[#6B6460]'}`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid / List */}
+          <AnimatePresence mode="wait">
+            {view === 'grid' ? (
+              <motion.div
+                key="grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+              >
+                {filtered.map((p, i) => (
+                  <PropertyCard key={p.id} prop={p} index={i} view="grid" />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-4"
+              >
+                {filtered.map((p, i) => (
+                  <PropertyCard key={p.id} prop={p} index={i} view="list" />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-20">
+              <p className="font-cormorant text-[#6B6460] text-3xl mb-3">No properties found</p>
+              <p className="font-dm text-[#6B6460] text-sm">Try adjusting your filters</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+'use client'
+
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { MapPin, Phone, MessageCircle, Download, Calendar, Bed, Square, ArrowLeft, ChevronRight, Waves, Dumbbell, Car, Shield, Zap, Trees, Star, Coffee } from 'lucide-react'
+import { properties } from '@/data/properties'
+
+const amenities = [
+  { icon: Waves, label: 'Swimming Pool' },
+  { icon: Dumbbell, label: 'Gymnasium' },
+  { icon: Car, label: 'Parking' },
+  { icon: Shield, label: 'Security' },
+  { icon: ChevronRight, label: 'Lift' },
+  { icon: Trees, label: 'Garden' },
+  { icon: Coffee, label: 'Clubhouse' },
+  { icon: Zap, label: 'Power Backup' },
+]
+
+export default function PropertyDetailPage() {
+  const { id } = useParams<{ id: string }>()
+  const property = properties.find((p) => p.id === id) ?? properties[0]
+
+  // Gallery images (use different seeds for thumbnails)
+  const galleryImages = [
+    property.image,
+    `https://picsum.photos/seed/${property.id}a/800/600`,
+    `https://picsum.photos/seed/${property.id}b/800/600`,
+    `https://picsum.photos/seed/${property.id}c/800/600`,
+    `https://picsum.photos/seed/${property.id}d/800/600`,
+  ]
+
+  const [activeImg, setActiveImg] = useState(0)
+  const [expanded, setExpanded] = useState(false)
+  const [formData, setFormData] = useState({ name: '', phone: '', message: '' })
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+    setTimeout(() => { setSubmitting(false); setSubmitted(true) }, 1500)
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0D0D0D]">
+      {/* Hero */}
+      <div className="relative h-[70vh] overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeImg}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0"
+          >
+            <Image src={galleryImages[activeImg]} alt={property.name} fill className="object-cover" />
+          </motion.div>
+        </AnimatePresence>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-transparent to-transparent" />
+        <div className="absolute bottom-8 left-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Link href="/properties" className="inline-flex items-center gap-2 font-dm text-[#6B6460] text-xs uppercase tracking-widest mb-4 hover:text-[#C9A96E] transition-colors">
+              <ArrowLeft className="w-3 h-3" /> Back to Properties
+            </Link>
+            <h1 className="font-cormorant text-[#F5F0E8] text-5xl md:text-6xl mb-2">{property.name}</h1>
+            <div className="flex items-center gap-2 font-dm text-[#6B6460] text-sm">
+              <MapPin className="w-3 h-3 text-[#C9A96E]" /> {property.location}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex flex-col lg:flex-row gap-12">
+          {/* Main */}
+          <div className="flex-1">
+            {/* Thumbnail strip */}
+            <div className="flex gap-3 mb-10 overflow-x-auto pb-2">
+              {galleryImages.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImg(i)}
+                  className={`relative w-24 h-16 flex-shrink-0 overflow-hidden border-2 transition-all ${
+                    activeImg === i ? 'border-[#C9A96E]' : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <Image src={img} alt="" fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+
+            {/* Highlights bar */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-10">
+              {[
+                { icon: Bed, label: 'BHK', val: property.bhk > 0 ? `${property.bhk} BHK` : 'N/A' },
+                { icon: Square, label: 'Area', val: `${property.sqft} sqft` },
+                { icon: ChevronRight, label: 'Floor', val: property.floor ? `${property.floor}th` : 'G' },
+                { icon: Star, label: 'Facing', val: property.facing ?? 'East' },
+                { icon: Calendar, label: 'Possession', val: property.possession ?? 'Immediate' },
+              ].map(({ icon: Icon, label, val }) => (
+                <div key={label} className="bg-[#111] border border-[#C9A96E]/10 p-4 text-center">
+                  <Icon className="w-4 h-4 text-[#C9A96E] mx-auto mb-2" />
+                  <p className="font-dm text-[#6B6460] text-[10px] uppercase tracking-wider mb-1">{label}</p>
+                  <p className="font-cormorant text-[#F5F0E8] text-lg">{val}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Description */}
+            <div className="mb-10">
+              <h2 className="font-cormorant text-[#F5F0E8] text-3xl mb-4">About This Property</h2>
+              <div className={`font-dm text-[#6B6460] leading-relaxed text-sm overflow-hidden transition-all duration-500 ${expanded ? '' : 'max-h-20'}`}>
+                <p className="mb-3">{property.description}</p>
+                <p>The development features state-of-the-art construction quality with premium imported materials throughout. Common areas include manicured gardens, a grand entrance lobby, and 24/7 concierge services to ensure a truly elevated living experience.</p>
+                <p className="mt-3">RERA registered and backed by Patil's Real Estate's 15 years of trust, this property represents not just a home but a legacy investment in Maharashtra's finest real estate landscape.</p>
+              </div>
+              <button
+                onClick={() => setExpanded((e) => !e)}
+                className="font-dm text-[#C9A96E] text-xs uppercase tracking-widest mt-3 hover:text-[#E8D5A3] transition-colors"
+              >
+                {expanded ? 'Read Less ↑' : 'Read More ↓'}
+              </button>
+            </div>
+
+            {/* Amenities */}
+            <div className="mb-10">
+              <h2 className="font-cormorant text-[#F5F0E8] text-3xl mb-6">Amenities</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {amenities.map(({ icon: Icon, label }, i) => (
+                  <motion.div
+                    key={label}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.06 }}
+                    className="flex flex-col items-center gap-3 py-5 border border-[#C9A96E]/10 hover:border-[#C9A96E]/40 transition-all group"
+                  >
+                    <Icon className="w-5 h-5 text-[#C9A96E] group-hover:scale-110 transition-transform" />
+                    <span className="font-dm text-[#6B6460] text-xs uppercase tracking-wider">{label}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Floor plan */}
+            <div className="mb-10">
+              <h2 className="font-cormorant text-[#F5F0E8] text-3xl mb-4">Floor Plan</h2>
+              <div className="relative h-64 bg-[#111] border border-[#C9A96E]/10 overflow-hidden">
+                <Image src={`https://picsum.photos/seed/floor${property.id}/900/400`} alt="Floor Plan" fill className="object-cover opacity-40" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button className="border border-[#C9A96E] text-[#C9A96E] px-6 py-2 font-dm text-sm uppercase tracking-widest hover:bg-[#C9A96E] hover:text-[#0D0D0D] transition-all flex items-center gap-2">
+                    <Download className="w-4 h-4" /> Download Floor Plan
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Neighbourhood */}
+            <div className="mb-10">
+              <h2 className="font-cormorant text-[#F5F0E8] text-3xl mb-4">Neighbourhood</h2>
+              <div className="flex flex-wrap gap-3">
+                {['2 min to Metro', '5 min to School', '10 min to Hospital', '15 min to Airport', '3 min to Mall'].map((n) => (
+                  <span key={n} className="border border-[#C9A96E]/30 text-[#C9A96E] font-dm text-xs px-4 py-2 uppercase tracking-wider">{n}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Map */}
+            <div>
+              <h2 className="font-cormorant text-[#F5F0E8] text-3xl mb-4">Location</h2>
+              <div className="h-64 bg-[#111] border border-[#C9A96E]/10 overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241317.11609823277!2d72.74109995!3d19.08249855!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c6306644edc1%3A0x5da4ed8f8d648c69!2sMumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1234567890"
+                  width="100%" height="100%"
+                  style={{ border: 0, filter: 'grayscale(1) invert(0.9)' }}
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Sticky Sidebar */}
+          <aside className="w-full lg:w-80 flex-shrink-0">
+            <div className="sticky top-24 space-y-4">
+              <div className="bg-[#111] border border-[#C9A96E]/20 p-6">
+                {/* Price */}
+                <p className="font-cormorant text-[#C9A96E] text-5xl mb-1">{property.price}</p>
+                <p className="font-dm text-[#6B6460] text-xs mb-6">EMI from ₹1.8L/month · 20yr @ 8.5%</p>
+
+                {/* CTAs */}
+                <div className="space-y-3 mb-6">
+                  <Link
+                    href="/contact"
+                    className="block w-full bg-[#C9A96E] text-[#0D0D0D] py-3 font-dm text-sm tracking-widest uppercase text-center hover:bg-[#E8D5A3] transition-all"
+                  >
+                    Schedule a Visit
+                  </Link>
+                  <button className="w-full border border-[#C9A96E] text-[#C9A96E] py-3 font-dm text-sm tracking-widest uppercase hover:bg-[#C9A96E] hover:text-[#0D0D0D] transition-all flex items-center justify-center gap-2">
+                    <Download className="w-4 h-4" /> Download Brochure
+                  </button>
+                  <a
+                    href="tel:+919876543210"
+                    className="flex items-center justify-center gap-2 border border-[#C9A96E]/20 text-[#6B6460] py-3 font-dm text-sm hover:text-[#F5F0E8] hover:border-[#C9A96E]/40 transition-all"
+                  >
+                    <Phone className="w-4 h-4 text-[#C9A96E]" /> +91 98765 43210
+                  </a>
+                </div>
+
+                {/* Agent card */}
+                <div className="border-t border-[#C9A96E]/10 pt-5 mb-6 flex items-center gap-4">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                    <Image src="https://picsum.photos/seed/agent1/100/100" alt="Agent" fill className="object-cover" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-cormorant text-[#F5F0E8] text-lg">Arjun Patil</p>
+                    <p className="font-dm text-[#6B6460] text-xs">Senior Property Advisor · 10 yrs exp</p>
+                  </div>
+                  <a href="https://wa.me/919876543210" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+                    <MessageCircle className="w-5 h-5" />
+                  </a>
+                </div>
+
+                {/* Enquiry form */}
+                <div className="border-t border-[#C9A96E]/10 pt-5">
+                  <p className="font-cormorant text-[#F5F0E8] text-xl mb-4">Quick Enquiry</p>
+                  <AnimatePresence mode="wait">
+                    {submitted ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-center py-6"
+                      >
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 300 }}
+                          className="w-12 h-12 bg-[#C9A96E] rounded-full flex items-center justify-center mx-auto mb-3"
+                        >
+                          <span className="text-[#0D0D0D] text-xl">✓</span>
+                        </motion.div>
+                        <p className="font-cormorant text-[#F5F0E8] text-lg">Enquiry Sent!</p>
+                        <p className="font-dm text-[#6B6460] text-xs mt-1">We'll call you within 2 hours</p>
+                      </motion.div>
+                    ) : (
+                      <motion.form key="form" onSubmit={handleSubmit} className="space-y-5">
+                        {[
+                          { name: 'name', placeholder: 'Your Name' },
+                          { name: 'phone', placeholder: 'Phone Number' },
+                        ].map((f) => (
+                          <div key={f.name} className="field-group">
+                            <input
+                              type="text"
+                              placeholder=" "
+                              value={(formData as Record<string, string>)[f.name]}
+                              onChange={(e) => setFormData({ ...formData, [f.name]: e.target.value })}
+                              className="input-gold"
+                            />
+                            <label>{f.placeholder}</label>
+                          </div>
+                        ))}
+                        <div className="field-group">
+                          <textarea
+                            placeholder=" "
+                            rows={3}
+                            value={formData.message}
+                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                            className="input-gold resize-none"
+                          />
+                          <label>Message</label>
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={submitting}
+                          className="w-full bg-[#C9A96E] text-[#0D0D0D] py-3 font-dm text-sm tracking-widest uppercase hover:bg-[#E8D5A3] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                        >
+                          {submitting ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                              className="w-4 h-4 border-2 border-[#0D0D0D] border-t-transparent rounded-full"
+                            />
+                          ) : 'Send Enquiry'}
+                        </button>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+'use client'
+
+import { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Award, Heart, Eye, Gem } from 'lucide-react'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const team = [
+  { name: 'Ramesh Patil', title: 'Founder & CEO', seed: 't1', bio: 'With 25 years in Mumbai real estate, Ramesh built Patil\'s from a single office to Maharashtra\'s most trusted brand.' },
+  { name: 'Arjun Patil', title: 'Head of Sales', seed: 't2', bio: 'Arjun specializes in luxury residential transactions and has personally closed ₹500Cr+ in deals.' },
+  { name: 'Meera Joshi', title: 'Design Consultant', seed: 't3', bio: 'Former architect turned property advisor, Meera helps clients see the full potential of every space.' },
+  { name: 'Vikram Nair', title: 'Commercial Division', seed: 't4', bio: 'Vikram leads our BKC and commercial portfolio with deep expertise in grade-A office leasing.' },
+]
+
+const milestones = [
+  { year: '2009', event: 'Founded in a 200 sqft office in Bandra', side: 'left' },
+  { year: '2012', event: 'First luxury project — Patil Heights — sold out in 3 days', side: 'right' },
+  { year: '2015', event: 'Expanded to Pune. Crossed ₹100Cr in transactions', side: 'left' },
+  { year: '2018', event: 'Launched commercial division. Entered BKC market', side: 'right' },
+  { year: '2020', event: 'Digital transformation — first virtual property tours in India', side: 'left' },
+  { year: '2022', event: 'Nashik expansion. Portfolio value crosses ₹1000Cr', side: 'right' },
+  { year: '2024', event: '500+ properties sold. Maharashtra\'s most trusted name', side: 'left' },
+]
+
+export default function AboutPage() {
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const lineRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (lineRef.current) {
+        gsap.from(lineRef.current, {
+          scaleY: 0,
+          duration: 2,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: timelineRef.current,
+            start: 'top 70%',
+            end: 'bottom 30%',
+            scrub: true,
+          },
+        })
+      }
+    })
+    return () => ctx.revert()
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-[#0D0D0D]">
+      {/* Hero */}
+      <div className="relative h-[70vh] overflow-hidden flex items-end">
+        <div className="absolute inset-0">
+          <Image
+            src="https://picsum.photos/seed/about-hero/1600/900"
+            alt="About"
+            fill
+            className="object-cover"
+            style={{ transform: 'translateY(var(--parallax, 0px))' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/50 to-transparent" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 pb-16 w-full">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-dm text-[#C9A96E] text-xs tracking-[0.35em] uppercase mb-4"
+          >
+            Who We Are
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="font-cormorant text-[#F5F0E8] text-6xl md:text-8xl"
+          >
+            Our Story
+          </motion.h1>
+        </div>
+      </div>
+
+      {/* Story section */}
+      <section className="max-w-7xl mx-auto px-6 py-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+        >
+          <p className="font-cormorant italic text-[#F5F0E8] text-4xl md:text-5xl leading-tight">
+            "Building trust since 2009. One family at a time."
+          </p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="space-y-5 font-dm text-[#6B6460] leading-relaxed"
+        >
+          <p>
+            Patil's Real Estate began with a simple belief: that buying a home should be a joyful journey, not a stressful transaction. In 2009, Ramesh Patil opened our first office in Bandra with just two desks and an unshakeable commitment to transparency.
+          </p>
+          <p>
+            Today, we are Maharashtra's most trusted luxury property consultancy — but our values remain the same. Every client is a family we serve for life, every property we recommend is one we would proudly call our own.
+          </p>
+          <p>
+            From the iconic skyline of Worli to the lush hills around Pune, we have helped over 500 families find spaces that don't just house them — but truly become their homes.
+          </p>
+        </motion.div>
+      </section>
+
+      {/* Team */}
+      <section className="bg-[#0A0A0A] py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <p className="font-dm text-[#C9A96E] text-xs tracking-[0.3em] uppercase mb-3">The People</p>
+            <h2 className="font-cormorant text-[#F5F0E8] text-5xl md:text-6xl">Our Team</h2>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {team.map((member, i) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="group relative overflow-hidden border border-[#C9A96E]/10 hover:border-[#C9A96E]/40 transition-all"
+              >
+                <div className="relative h-72 overflow-hidden">
+                  <Image src={`https://picsum.photos/seed/${member.seed}/400/500`} alt={member.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-[#0D0D0D]/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
+                    <p className="font-dm text-[#6B6460] text-sm leading-relaxed">{member.bio}</p>
+                  </div>
+                </div>
+                <div className="p-5 bg-[#111]">
+                  <h3 className="font-cormorant text-[#F5F0E8] text-xl">{member.name}</h3>
+                  <p className="font-dm text-[#C9A96E] text-xs uppercase tracking-wider mt-1">{member.title}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Values */}
+      <section className="py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="font-cormorant text-[#F5F0E8] text-5xl md:text-6xl">Our Values</h2>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { icon: Heart, title: 'Trust', desc: 'Every promise we make is one we keep. Our track record of 15 years speaks for itself.' },
+              { icon: Eye, title: 'Transparency', desc: 'No hidden charges, no fine print surprises. Complete clarity at every step of your journey.' },
+              { icon: Gem, title: 'Excellence', desc: 'We curate only the finest properties and deliver service that exceeds every expectation.' },
+            ].map(({ icon: Icon, title, desc }, i) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="border-l-2 border-[#C9A96E] pl-6 py-2 group"
+              >
+                <Icon className="w-6 h-6 text-[#C9A96E] mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform" />
+                <h3 className="font-cormorant text-[#F5F0E8] text-3xl mb-3">{title}</h3>
+                <p className="font-dm text-[#6B6460] leading-relaxed text-sm">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Awards ticker */}
+      <div className="bg-[#0A0A0A] border-y border-[#C9A96E]/10 py-6 overflow-hidden">
+        <div className="flex whitespace-nowrap">
+          {[0, 1].map((i) => (
+            <motion.div
+              key={i}
+              animate={{ x: [0, '-50%'] }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              className="flex items-center gap-12 flex-shrink-0"
+            >
+              {['Best Real Estate Agency 2023', 'CREDAI Excellence Award', 'Top Luxury Broker Mumbai', 'ISO 9001:2015 Certified', 'RERA Compliant', 'Customer Choice Award 2024'].map((a) => (
+                <div key={a} className="flex items-center gap-3">
+                  <Award className="w-4 h-4 text-[#C9A96E] flex-shrink-0" />
+                  <span className="font-dm text-[#6B6460] text-sm tracking-widest uppercase">{a}</span>
+                </div>
+              ))}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <section ref={timelineRef} className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="font-cormorant text-[#F5F0E8] text-5xl md:text-6xl">Our Journey</h2>
+          </motion.div>
+          <div className="relative">
+            {/* Center line */}
+            <div
+              ref={lineRef}
+              className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-[#C9A96E] to-transparent -translate-x-1/2"
+            />
+            <div className="space-y-12">
+              {milestones.map((m, i) => (
+                <motion.div
+                  key={m.year}
+                  initial={{ opacity: 0, x: m.side === 'left' ? -40 : 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className={`flex items-center gap-8 ${m.side === 'right' ? 'flex-row-reverse' : ''}`}
+                >
+                  <div className={`flex-1 ${m.side === 'right' ? 'text-right' : ''}`}>
+                    <p className="font-cormorant text-[#C9A96E] text-4xl mb-1">{m.year}</p>
+                    <p className="font-dm text-[#6B6460] text-sm leading-relaxed">{m.event}</p>
+                  </div>
+                  {/* Dot */}
+                  <div className="w-3 h-3 bg-[#C9A96E] rounded-full flex-shrink-0 relative z-10 shadow-[0_0_12px_rgba(201,169,110,0.6)]" />
+                  <div className="flex-1" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+'use client'
+
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MapPin, Phone, Mail, Clock, Instagram, Linkedin, Youtube } from 'lucide-react'
+
+export default function ContactPage() {
+  const [form, setForm] = useState({
+    name: '', phone: '', email: '', city: '', message: '', interest: '',
+  })
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+    setTimeout(() => { setSubmitting(false); setSubmitted(true) }, 1800)
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0D0D0D] pt-24">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+          <p className="font-dm text-[#C9A96E] text-xs tracking-[0.35em] uppercase mb-3">Get In Touch</p>
+          <h1 className="font-cormorant text-[#F5F0E8] text-6xl md:text-7xl mb-3">Contact Us</h1>
+          <p className="font-dm text-[#6B6460]">We're here to help you find your perfect property</p>
+        </motion.div>
+      </div>
+
+      {/* Main grid */}
+      <div className="max-w-7xl mx-auto px-6 pb-0 grid grid-cols-1 lg:grid-cols-2 gap-16">
+        {/* Form */}
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <AnimatePresence mode="wait">
+            {submitted ? (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center py-24 text-center"
+              >
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 250, delay: 0.1 }}
+                  className="w-20 h-20 bg-[#C9A96E] rounded-full flex items-center justify-center mb-6"
+                >
+                  <span className="text-[#0D0D0D] text-3xl">✓</span>
+                </motion.div>
+                <h2 className="font-cormorant text-[#F5F0E8] text-4xl mb-3">Enquiry Sent!</h2>
+                <p className="font-dm text-[#6B6460] text-sm mb-6">We'll call you within 2 hours during business hours.</p>
+                <button
+                  onClick={() => setSubmitted(false)}
+                  className="border border-[#C9A96E] text-[#C9A96E] px-8 py-3 font-dm text-sm uppercase tracking-widest hover:bg-[#C9A96E] hover:text-[#0D0D0D] transition-all"
+                >
+                  Send Another
+                </button>
+              </motion.div>
+            ) : (
+              <motion.form key="form" onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="field-group">
+                    <input name="name" type="text" placeholder=" " value={form.name} onChange={handleChange} className="input-gold" required />
+                    <label>Full Name *</label>
+                  </div>
+                  <div className="field-group">
+                    <input name="phone" type="tel" placeholder=" " value={form.phone} onChange={handleChange} className="input-gold" required />
+                    <label>Phone Number *</label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="field-group">
+                    <input name="email" type="email" placeholder=" " value={form.email} onChange={handleChange} className="input-gold" />
+                    <label>Email Address</label>
+                  </div>
+                  <div className="field-group">
+                    <input name="city" type="text" placeholder=" " value={form.city} onChange={handleChange} className="input-gold" />
+                    <label>Your City</label>
+                  </div>
+                </div>
+
+                <div className="field-group">
+                  <select
+                    name="interest"
+                    value={form.interest}
+                    onChange={handleChange}
+                    className="input-gold bg-transparent"
+                  >
+                    <option value="" disabled>Select Property Interest</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="villa">Villa</option>
+                    <option value="plot">Plot</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                  <label style={{ top: form.interest ? '-16px' : '8px', fontSize: form.interest ? '0.65rem' : '0.75rem', color: form.interest ? '#C9A96E' : '#6B6460' }}>
+                    Property Interest
+                  </label>
+                </div>
+
+                <div className="field-group">
+                  <textarea name="message" placeholder=" " rows={4} value={form.message} onChange={handleChange} className="input-gold resize-none" />
+                  <label>Your Message</label>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex items-center gap-3 bg-[#C9A96E] text-[#0D0D0D] px-10 py-4 font-dm text-sm tracking-widest uppercase hover:bg-[#E8D5A3] transition-all disabled:opacity-70"
+                >
+                  {submitting ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                        className="w-4 h-4 border-2 border-[#0D0D0D] border-t-transparent rounded-full"
+                      />
+                      Sending...
+                    </>
+                  ) : (
+                    <>Send Enquiry →</>
+                  )}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Info */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-10"
+        >
+          <div>
+            <p className="font-dm text-[#C9A96E] text-xs tracking-[0.3em] uppercase mb-6">Our Offices</p>
+            <div className="space-y-8">
+              {[
+                {
+                  city: 'Mumbai HQ',
+                  address: '101, Trade Centre, Bandra Kurla Complex, Mumbai 400051',
+                  phone: '+91 98765 43210',
+                  hours: 'Mon–Sat: 9am–7pm',
+                },
+                {
+                  city: 'Pune Branch',
+                  address: '302, Aundh Road, Wakad, Pune 411057',
+                  phone: '+91 98765 00001',
+                  hours: 'Mon–Sat: 10am–6pm',
+                },
+              ].map((office) => (
+                <div key={office.city} className="border-l border-[#C9A96E]/30 pl-6">
+                  <h3 className="font-cormorant text-[#F5F0E8] text-2xl mb-3">{office.city}</h3>
+                  <div className="space-y-2">
+                    <div className="flex gap-3 font-dm text-[#6B6460] text-sm">
+                      <MapPin className="w-4 h-4 text-[#C9A96E] flex-shrink-0 mt-0.5" />
+                      <span>{office.address}</span>
+                    </div>
+                    <div className="flex gap-3 font-dm text-[#6B6460] text-sm">
+                      <Phone className="w-4 h-4 text-[#C9A96E] flex-shrink-0" />
+                      <span>{office.phone}</span>
+                    </div>
+                    <div className="flex gap-3 font-dm text-[#6B6460] text-sm">
+                      <Clock className="w-4 h-4 text-[#C9A96E] flex-shrink-0" />
+                      <span>{office.hours}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex gap-3 font-dm text-[#6B6460] text-sm mb-4">
+              <Mail className="w-4 h-4 text-[#C9A96E] flex-shrink-0" />
+              <span>hello@patilsrealestate.com</span>
+            </div>
+          </div>
+
+          {/* Social */}
+          <div>
+            <p className="font-dm text-[#6B6460] text-xs uppercase tracking-widest mb-4">Follow Us</p>
+            <div className="flex gap-3">
+              {[
+                { Icon: Instagram, label: 'Instagram' },
+                { Icon: Linkedin, label: 'LinkedIn' },
+                { Icon: Youtube, label: 'YouTube' },
+              ].map(({ Icon, label }) => (
+                <a
+                  key={label}
+                  href="#"
+                  aria-label={label}
+                  className="w-10 h-10 border border-[#C9A96E]/20 flex items-center justify-center text-[#6B6460] hover:text-[#C9A96E] hover:border-[#C9A96E] transition-all"
+                >
+                  <Icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Map */}
+      <div className="mt-16 h-96">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241317.11609823277!2d72.74109995!3d19.08249855!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c6306644edc1%3A0x5da4ed8f8d648c69!2sMumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1234567890"
+          width="100%" height="100%"
+          style={{ border: 0, filter: 'grayscale(1) invert(0.85) contrast(1.1)' }}
+          loading="lazy"
+        />
+      </div>
+    </div>
+  )
+}
+
+'use client'
+
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Clock, ArrowRight } from 'lucide-react'
+import { blogPosts } from '@/data/blog'
+
+const featured = blogPosts.find((p) => p.featured)!
+const rest = blogPosts.filter((p) => !p.featured)
+
+const categoryColors: Record<string, string> = {
+  'Market Insights': 'text-[#C9A96E] border-[#C9A96E]/40',
+  'Investment': 'text-emerald-400 border-emerald-400/40',
+  'Legal Guide': 'text-blue-400 border-blue-400/40',
+  "Buyer's Guide": 'text-purple-400 border-purple-400/40',
+  'NRI Corner': 'text-orange-400 border-orange-400/40',
+}
+
+export default function BlogPage() {
+  return (
+    <div className="min-h-screen bg-[#0D0D0D] pt-24">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+          <p className="font-dm text-[#C9A96E] text-xs tracking-[0.35em] uppercase mb-3">Knowledge Hub</p>
+          <h1 className="font-cormorant text-[#F5F0E8] text-6xl md:text-7xl mb-2">Market Insights</h1>
+          <p className="font-dm text-[#6B6460]">Real estate news, guides, and expert analysis</p>
+        </motion.div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pb-24">
+        {/* Featured Post */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-0 mb-16 group border border-[#C9A96E]/10 hover:border-[#C9A96E]/40 transition-all overflow-hidden"
+        >
+          <div className="relative h-72 lg:h-auto overflow-hidden">
+            <Image
+              src={featured.image}
+              alt={featured.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-700"
+            />
+          </div>
+          <div className="bg-[#111] p-8 md:p-12 flex flex-col justify-center">
+            <div className="flex items-center gap-3 mb-4">
+              <span className={`font-dm text-[10px] uppercase tracking-widest border px-3 py-1 ${categoryColors[featured.category] ?? 'text-[#6B6460] border-[#6B6460]/40'}`}>
+                {featured.category}
+              </span>
+              <span className="font-dm text-[#6B6460] text-xs">Featured</span>
+            </div>
+            <h2 className="font-cormorant text-[#F5F0E8] text-3xl md:text-4xl mb-4 leading-snug">
+              {featured.title}
+            </h2>
+            <p className="font-dm text-[#6B6460] text-sm leading-relaxed mb-6">{featured.excerpt}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 font-dm text-[#6B6460] text-xs">
+                <span>{featured.date}</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> {featured.readTime}
+                </span>
+              </div>
+              <Link
+                href={`/blog/${featured.id}`}
+                className="blog-link flex items-center gap-2 font-dm text-[#C9A96E] text-sm uppercase tracking-wider hover:text-[#E8D5A3] transition-colors"
+              >
+                Read More <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rest.map((post, i) => (
+            <motion.article
+              key={post.id}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              className="group border border-[#C9A96E]/10 hover:border-[#C9A96E]/40 transition-all overflow-hidden bg-[#111]"
+            >
+              <div className="relative h-52 overflow-hidden">
+                <Image
+                  src={post.image}
+                  alt={post.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent" />
+              </div>
+              <div className="p-6">
+                <span className={`inline-block font-dm text-[10px] uppercase tracking-widest border px-3 py-1 mb-4 ${categoryColors[post.category] ?? 'text-[#6B6460] border-[#6B6460]/40'}`}>
+                  {post.category}
+                </span>
+                <h3 className="font-cormorant text-[#F5F0E8] text-2xl mb-3 leading-snug group-hover:text-[#C9A96E] transition-colors">
+                  {post.title}
+                </h3>
+                <p className="font-dm text-[#6B6460] text-sm leading-relaxed mb-5 line-clamp-2">{post.excerpt}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 font-dm text-[#6B6460] text-[10px] uppercase tracking-wider">
+                    <span>{post.date}</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {post.readTime}
+                    </span>
+                  </div>
+                  <Link
+                    href={`/blog/${post.id}`}
+                    className="blog-link font-dm text-[#C9A96E] text-xs uppercase tracking-wider"
+                  >
+                    Read More →
+                  </Link>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
