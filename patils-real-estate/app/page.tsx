@@ -55,12 +55,14 @@ function ScrollSequence() {
       img.onload = () => {
         loaded++
         setProgress(Math.round((loaded / totalFrames) * 100))
-        if (loaded === totalFrames) setLoading(false)
+        // Dismiss loader early so the site appears instantly, 
+        // the rest of the 400+ frames will lazily load in background.
+        if (loaded === 2) setLoading(false)
       }
       img.onerror = () => {
         loaded++
         setProgress(Math.round((loaded / totalFrames) * 100))
-        if (loaded === totalFrames) setLoading(false)
+        if (loaded === 2) setLoading(false)
       }
       frames.push(img)
     }
