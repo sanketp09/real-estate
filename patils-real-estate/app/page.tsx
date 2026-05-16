@@ -56,8 +56,9 @@ function ScrollSequence() {
     const frames: HTMLImageElement[] = new Array(totalFrames)
     framesRef.current = frames
     
-    // Quick-Start: Dismiss loader after 25 frames are loaded
-    const BATCH_SIZE = 25 
+    let loadedCount = 0
+    let currentIdx = 1
+    const MAX_CONCURRENT = 8
 
     const drawFrame = (index: number) => {
       const img = framesRef.current[index]
@@ -71,36 +72,34 @@ function ScrollSequence() {
       ctx.drawImage(img, x, y, img.naturalWidth * scale, img.naturalHeight * scale)
     }
 
-    const loadSequential = (startIndex: number, onComplete?: () => void) => {
-      if (startIndex > totalFrames) {
-        if (onComplete) onComplete()
-        return
-      }
-      const img = new window.Image()
-      img.src = `/frames/frame_${String(startIndex).padStart(3, '0')}.jpg`
-      img.onload = () => {
-        frames[startIndex - 1] = img
-        // Progress bar scales to 100% based on the Quick-Start batch
-        setProgress(Math.min(Math.round((startIndex / BATCH_SIZE) * 100), 100))
+    const loadWorker = async () => {
+      while (currentIdx <= totalFrames) {
+        const index = currentIdx++
+        if (index > totalFrames) break
 
-        if (startIndex === 1) drawFrame(0)
-        
-        if (startIndex === BATCH_SIZE) {
-          setLoading(false)
-          // Continue loading the rest silently in background
-          loadSequential(startIndex + 1)
-        } else if (startIndex < BATCH_SIZE || startIndex > BATCH_SIZE) {
-          loadSequential(startIndex + 1, onComplete)
-        }
-      }
-      img.onerror = () => {
-        if (startIndex === BATCH_SIZE) setLoading(false)
-        loadSequential(startIndex + 1, onComplete)
+        await new Promise<void>((resolve) => {
+          const img = new window.Image()
+          img.src = `/frames/frame_${String(index).padStart(3, '0')}.jpg`
+          
+          const handleDone = () => {
+            frames[index - 1] = img
+            loadedCount++
+            setProgress(Math.round((loadedCount / totalFrames) * 100))
+            if (index === 1) drawFrame(0)
+            if (loadedCount === totalFrames) setLoading(false)
+            resolve()
+          }
+
+          img.onload = handleDone
+          img.onerror = handleDone
+        })
       }
     }
 
-    // Start loading sequentially
-    loadSequential(1)
+    // Start parallel workers to bypass Vercel network ping latency
+    for (let i = 0; i < MAX_CONCURRENT; i++) {
+      loadWorker()
+    }
 
     const ctx2 = gsap.context(() => {
       ScrollTrigger.create({
