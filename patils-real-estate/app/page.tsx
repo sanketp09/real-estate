@@ -13,13 +13,15 @@ import { createPortal } from 'react-dom'
 gsap.registerPlugin(ScrollTrigger)
 
 function ScrollSequence() {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const framesRef = useRef<HTMLImageElement[]>([])
   const [loading, setLoading] = useState(true)
   const [progress, setProgress] = useState(0)
   const [showStartText, setShowStartText] = useState(true)
   const [showEndText, setShowEndText] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const currentFrameRef = useRef(0)
 
   useEffect(() => {
     setMounted(true)
@@ -38,40 +40,79 @@ function ScrollSequence() {
   }, [loading])
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-    const handleLoadedMetadata = () => {
-      // Simulate quick loading progress since the 5MB video loads almost instantly
-      let p = 0
-      const interval = setInterval(() => {
-        p += 4
-        setProgress(Math.min(p, 100))
-        if (p >= 100) {
-          clearInterval(interval)
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    const totalFrames = 471
+    const frames: HTMLImageElement[] = new Array(totalFrames)
+    framesRef.current = frames
+    
+    // Quick-Start: Dismiss loader after 25 frames are loaded
+    const BATCH_SIZE = 25 
+
+    const drawFrame = (index: number) => {
+      const img = framesRef.current[index]
+      if (!img || !img.complete) return
+      
+      const baseScale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight)
+      const scale = baseScale * 1.08 // Zoom slightly to crop edges
+      const x = (canvas.width - img.naturalWidth * scale) / 2
+      const y = 0
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, x, y, img.naturalWidth * scale, img.naturalHeight * scale)
+    }
+
+    const loadSequential = (startIndex: number, onComplete?: () => void) => {
+      if (startIndex > totalFrames) {
+        if (onComplete) onComplete()
+        return
+      }
+      const img = new window.Image()
+      img.src = `/frames/frame_${String(startIndex).padStart(3, '0')}.jpg`
+      img.onload = () => {
+        frames[startIndex - 1] = img
+        // Progress bar scales to 100% based on the Quick-Start batch
+        setProgress(Math.min(Math.round((startIndex / BATCH_SIZE) * 100), 100))
+
+        if (startIndex === 1) drawFrame(0)
+        
+        if (startIndex === BATCH_SIZE) {
           setLoading(false)
+          // Continue loading the rest silently in background
+          loadSequential(startIndex + 1)
+        } else if (startIndex < BATCH_SIZE || startIndex > BATCH_SIZE) {
+          loadSequential(startIndex + 1, onComplete)
         }
-      }, 30)
+      }
+      img.onerror = () => {
+        if (startIndex === BATCH_SIZE) setLoading(false)
+        loadSequential(startIndex + 1, onComplete)
+      }
     }
 
-    if (video.readyState >= 1) {
-      handleLoadedMetadata()
-    } else {
-      video.addEventListener('loadedmetadata', handleLoadedMetadata)
-      // Fallback in case metadata fails or takes too long
-      setTimeout(() => setLoading(false), 2000) 
-    }
+    // Start loading sequentially
+    loadSequential(1)
 
-    const ctx = gsap.context(() => {
+    const ctx2 = gsap.context(() => {
       ScrollTrigger.create({
         trigger: wrapperRef.current,
         start: 'top top',
         end: 'bottom bottom',
-        scrub: 0.1, // Add slight smoothing to video scrub
+        scrub: 0.5,
         onUpdate: (self) => {
-          if (video && video.duration) {
-            // Update video time based on scroll progress
-            video.currentTime = self.progress * video.duration
+          const frameIndex = Math.min(Math.floor(self.progress * (totalFrames - 1)), totalFrames - 1)
+          if (frameIndex !== currentFrameRef.current) {
+            currentFrameRef.current = frameIndex
+            drawFrame(frameIndex)
           }
           setShowStartText(self.progress < 0.1)
           setShowEndText(self.progress > 0.83)
@@ -80,8 +121,8 @@ function ScrollSequence() {
     })
 
     return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      ctx.revert()
+      window.removeEventListener('resize', resize)
+      ctx2.revert()
     }
   }, [])
 
@@ -118,15 +159,8 @@ function ScrollSequence() {
       )}
 
       <div ref={wrapperRef} style={{ height: '600vh' }} className="relative">
-        <div className="sticky top-0 h-screen w-full overflow-hidden bg-[var(--navy)]">
-          <video 
-            ref={videoRef}
-            src="/hero-sequence.mp4" 
-            playsInline
-            muted
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover scale-[1.08] origin-top"
-          />
+        <div className="sticky top-0 h-screen w-full overflow-hidden bg-[var(--white)]">
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           
           {/* Shadow overlay to hide any remaining watermark at the bottom edge */}
           <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
