@@ -12,6 +12,7 @@ import { createPortal } from 'react-dom'
 
 gsap.registerPlugin(ScrollTrigger)
 
+function ScrollSequence() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(true)
