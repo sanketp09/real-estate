@@ -18,8 +18,8 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Shrav Estate | Mumbai's Premier Luxury Properties",
-  description: "Discover premium residential and commercial properties in Mumbai, Pune, and Nashik with Shrav Estate.",
+  title: "Patil Estate | Mumbai's Premier Luxury Properties",
+  description: "Discover premium residential and commercial properties in Mumbai, Pune, and Nashik with Patil Estate.",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

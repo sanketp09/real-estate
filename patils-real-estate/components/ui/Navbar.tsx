@@ -39,7 +39,7 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex flex-col leading-none">
-            <span className={`font-cormorant text-2xl tracking-widest font-semibold transition-colors duration-500 ${isDarkText ? 'text-[var(--navy)]' : 'text-[var(--white)]'}`}>SHRAV</span>
+            <span className={`font-cormorant text-2xl tracking-widest font-semibold transition-colors duration-500 ${isDarkText ? 'text-[var(--navy)]' : 'text-[var(--white)]'}`}>PATIL</span>
             <span className={`font-dm text-[10px] tracking-[0.25em] uppercase transition-colors duration-500 ${isDarkText ? 'text-[var(--teal)]' : 'text-[var(--white)]/80'}`}>Real Estate</span>
           </Link>
 

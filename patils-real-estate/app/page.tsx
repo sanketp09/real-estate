@@ -180,7 +180,7 @@ function ScrollSequence() {
                   transition={{ delay: 0.1 }}
                   className="font-dm text-[var(--beige)] text-sm tracking-[0.3em] uppercase mb-6 font-semibold"
                 >
-                  Welcome To Shrav Estate
+                  Welcome To Patil Estate
                 </motion.p>
                 <div className="overflow-hidden mb-6">
                   <motion.h1
@@ -229,7 +229,7 @@ function ScrollSequence() {
                     transition={{ delay: 0.25, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     className="font-cormorant text-[var(--white)] font-bold uppercase text-[7vw] md:text-[6vw] tracking-wider leading-none text-center"
                   >
-                    Shrav Estate
+                    Patil Estate
                   </motion.h1>
                 </div>
                 <motion.p
@@ -277,7 +277,7 @@ function ScrollSequence() {
 }
 
 function Marquee() {
-  const text = 'LUXURY RESIDENCES  ·  COMMERCIAL SPACES  ·  PREMIUM PLOTS  ·  MUMBAI  ·  PUNE  ·  NASHIK  ·  SHRAV ESTATE  ·  '
+  const text = 'LUXURY RESIDENCES  ·  COMMERCIAL SPACES  ·  PREMIUM PLOTS  ·  MUMBAI  ·  PUNE  ·  NASHIK  ·  PATIL ESTATE  ·  '
   return (
     <div className="bg-[var(--navy)] py-5 overflow-hidden border-y border-[var(--rule)]">
       <div className="flex whitespace-nowrap">
@@ -430,7 +430,7 @@ function StatsSection() {
 }
 
 const testimonials = [
-  { quote: 'Shrav\'s team found us our dream home in Bandra in under two weeks. Their knowledge of Mumbai\'s micro-markets is unparalleled.', name: 'Rohan Mehta', location: 'Bandra, Mumbai' },
+  { quote: 'Patil\'s team found us our dream home in Bandra in under two weeks. Their knowledge of Mumbai\'s micro-markets is unparalleled.', name: 'Rohan Mehta', location: 'Bandra, Mumbai' },
   { quote: 'The level of transparency throughout the transaction gave us complete peace of mind. Truly a class apart from other brokers.', name: 'Priya Sharma', location: 'Juhu, Mumbai' },
   { quote: 'From Nashik to Mumbai, they handled everything seamlessly. The property we got exceeded every expectation.', name: 'Amit Kulkarni', location: 'Nashik' },
 ]

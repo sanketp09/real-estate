@@ -41,7 +41,7 @@ export default function PropertyDetail() {
           <div className="bg-[var(--sky-blue)] text-[var(--navy)] font-bold px-3 py-1 font-dm text-[10px] tracking-widest uppercase inline-block mb-4">
             Ready to Move
           </div>
-          <h1 className="font-cormorant text-5xl md:text-7xl text-[var(--white)] mb-4 font-semibold">Shrav Heights</h1>
+          <h1 className="font-cormorant text-5xl md:text-7xl text-[var(--white)] mb-4 font-semibold">Patil Heights</h1>
           <p className="font-dm text-lg text-[var(--white)]/90 flex items-center gap-2">
             <MapPin className="w-5 h-5 text-[var(--sky-blue)]" /> Bandra West, Mumbai
           </p>
@@ -106,7 +106,7 @@ export default function PropertyDetail() {
           <div>
             <h2 className="font-cormorant text-3xl font-semibold text-[var(--navy)] mb-6">About the Property</h2>
             <div className="font-dm text-[var(--navy)]/80 leading-relaxed space-y-4">
-              <p>Experience the pinnacle of luxury living at Shrav Heights, nestled in the heart of Bandra West. This meticulously crafted 3 BHK residence offers panoramic views of the Arabian Sea and the bustling city skyline.</p>
+              <p>Experience the pinnacle of luxury living at Patil Heights, nestled in the heart of Bandra West. This meticulously crafted 3 BHK residence offers panoramic views of the Arabian Sea and the bustling city skyline.</p>
               <p>Designed with a perfect blend of modern aesthetics and functional spaces, the apartment features Italian marble flooring, a state-of-the-art modular kitchen, and expansive balconies that invite natural light and sea breeze.</p>
               <button className="text-[var(--teal)] uppercase tracking-widest text-xs font-bold mt-4 hover:underline">Read More</button>
             </div>
@@ -174,7 +174,7 @@ export default function PropertyDetail() {
                   <Image src="https://picsum.photos/seed/agent/100/100" alt="Agent" fill className="object-cover" />
                 </div>
                 <div>
-                  <p className="font-cormorant font-semibold text-xl text-[var(--navy)]">Vikram Shrav</p>
+                  <p className="font-cormorant font-semibold text-xl text-[var(--navy)]">Vikram Patil</p>
                   <p className="font-dm text-xs font-medium text-[var(--navy)]/60">Senior Property Advisor • 10 yrs exp</p>
                 </div>
               </div>

@@ -70,8 +70,8 @@ export default function ContactPage() {
             </div>
             <div>
               <h3 className="font-dm font-bold text-[var(--navy)] text-lg mb-1">Email Address</h3>
-              <p className="font-dm text-[var(--navy)]/60 text-sm">info@shravestate.com</p>
-              <p className="font-dm text-[var(--navy)]/60 text-sm">support@shravestate.com</p>
+              <p className="font-dm text-[var(--navy)]/60 text-sm">info@patilestate.com</p>
+              <p className="font-dm text-[var(--navy)]/60 text-sm">support@patilestate.com</p>
             </div>
           </div>
         </div>

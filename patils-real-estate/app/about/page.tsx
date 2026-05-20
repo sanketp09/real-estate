@@ -38,7 +38,7 @@ export default function AboutPage() {
   }, [])
 
   const team = [
-    { name: "Rahul Shrav", title: "Founder & CEO", image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80" },
+    { name: "Rahul Patil", title: "Founder & CEO", image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80" },
     { name: "Sneha Desai", title: "Head of Sales", image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80" },
     { name: "Amit Kulkarni", title: "Lead Architect", image: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=800&q=80" },
     { name: "Priya Sharma", title: "Legal Advisor", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=80" },
